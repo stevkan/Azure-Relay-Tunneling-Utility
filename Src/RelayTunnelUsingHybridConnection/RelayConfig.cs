@@ -1,0 +1,18 @@
+namespace RelayTunnelUsingHybridConnection
+{
+    public class RelayConfig
+    {
+        public bool IsEnabled { get; set; }
+        public string RelayNamespace { get; set; }
+        public string RelayName { get; set; }
+        public string PolicyName { get; set; }
+        public string PolicyKey { get; set; }
+        public string TargetServiceAddress { get; set; }
+        
+        // ARM Resource Management properties
+        public bool DynamicResourceCreation { get; set; } = false;
+        public string ResourceGroupName { get; set; }
+        public string Description { get; set; } = "Dynamically created hybrid connection";
+        public bool RequiresClientAuthorization { get; set; } = true;
+    }
+}
