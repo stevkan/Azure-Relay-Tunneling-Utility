@@ -1,11 +1,11 @@
 # Overview
-A relay utility for bots based on Azure Service Bus.  
+A relay utility for bots and agents based on Azure Service Bus.  
 
-This utility allows you to forward a message sent to a bot hosted on any channel to your local machine.
+This utility allows you to forward a message sent to a bot or agent hosted on any channel to your local machine.
 
-It is useful for debug scenarios or for more complex situations where the BotEmulator is not enough (i.e.: you use the WebChat control hosted on a site and you need to receive ChannelData in your requests).
+It is useful for debug scenarios or for more complex situations where you need to receive ChannelData in your requests from channels like WebChat hosted on websites.
 
-**Version: 1.0.0**
+**Version: 1.1.0**
 
 ## Acknowledgments 
 This project is a rewrite inspired by the original work that [Gabriel Gonzalez (gabog)](https://github.com/gabog) created in his project [AzureServiceBusBotRelay](https://github.com/gabog/AzureServiceBusBotRelay).
@@ -31,7 +31,7 @@ Part of this code is also based on the work that [Pedro Felix](https://github.co
    
     d. **"PolicyKey"** - The key for the shared access policy from your Azure Relay namespace.
    
-    e. **"TargetServiceAddress"** - The localhost address and port for your bot (e.g., "http://localhost:3978/").
+    e. **"TargetServiceAddress"** - The localhost address and port for your bot/agent (e.g., "http://localhost:3978/").
     
     f. **"ServiceDiscoveryMode"** - Set to "Private" or "Public" for relay visibility.
     
@@ -39,9 +39,9 @@ Part of this code is also based on the work that [Pedro Felix](https://github.co
     
     h. **"IsEnabled"** - Set to `true` to enable this relay configuration.
    
-5. Before testing the relay, your Azure Web Bot's messaging endpoint must be updated to match the relay.
+5. Before testing the relay, your Azure Bot's messaging endpoint must be updated to match the relay.
    
-    a. Login to the Azure portal and open your Web App Bot.
+    a. Login to the Azure portal and open your Azure Bot's registration.
     
     b. Select **Settings** under Bot management to open the settings blade.
     
@@ -53,11 +53,9 @@ Part of this code is also based on the work that [Pedro Felix](https://github.co
    
 6. In Visual Studio, press **F5** to run the project.
    
-7. Open and run your locally hosted bot.
+7. Open and run your locally hosted bot/agent.
    
-8. Test your bot on a channel (Test in Web Chat, Skype, Teams, etc.). User data is captured and logged as activity occurs.
-
-    - When using the Bot Framework Emulator: The endpoint entered in Emulator must be the service bus endpoint saved in your Azure Web Bot **Settings** blade, under **Messaging Endpoint**.
+8. Test your bot/agent on a channel (Test in Web Chat, Skype, Teams, etc.). User data is captured and logged as activity occurs.
 
 9. Once testing is completed, you can compile the project into an executable.
 
@@ -128,7 +126,7 @@ c. **"PolicyName"** - The name of the shared access policy.
 
 d. **"PolicyKey"** - The key for the shared access policy.
 
-e. **"TargetServiceAddress"** - The localhost address and port for your bot (e.g., "http://localhost:3978").
+e. **"TargetServiceAddress"** - The localhost address and port for your bot/agent (e.g., "http://localhost:3978").
 
 f. **"IsEnabled"** - Set to `true` to enable this relay configuration.
 
@@ -171,7 +169,7 @@ The .NET Core version supports **ARM Template Automation** for dynamic hybrid co
 
 ### How It Works
 1. **App Start**: If `DynamicResourceCreation: true`, the hybrid connection resource is automatically created in Azure using the ARM template
-2. **App Running**: Your bot receives messages through the dynamically created relay endpoint
+2. **App Running**: Your bot/agent receives messages through the dynamically created relay endpoint
 3. **App Stop**: The hybrid connection resource is automatically deleted from Azure, leaving no trace
 
 ### When to Use Dynamic vs Static Resources
@@ -179,9 +177,9 @@ The .NET Core version supports **ARM Template Automation** for dynamic hybrid co
 - **Static** (`DynamicResourceCreation: false`): Best for production environments where you want persistent, manually managed resources
 
    
-5. Before testing the relay, your Azure Web App Bot's messaging endpoint must be updated to match the relay.
+5. Before testing the relay, your Azure Bot's messaging endpoint must be updated to match the relay.
    
-    a. Login to the Azure portal and open your Web App Bot.
+    a. Login to the Azure portal and open your Azure Bot's registration.
     
     b. Select **Settings** under Bot management to open the settings blade.
     
@@ -193,11 +191,9 @@ The .NET Core version supports **ARM Template Automation** for dynamic hybrid co
    
 6. In Visual Studio, press **F5** to run the project.
    
-7. Open and run your locally hosted bot.
+7. Open and run your locally hosted bot/agent.
    
-8. Test your bot on a channel (Test in Web Chat, Skype, Teams, etc.). User data is captured and logged as activity occurs.
-
-    - When using the Bot Framework Emulator: The endpoint entered in Emulator must be the service bus endpoint saved in your Azure Web Bot **Settings** blade, under **Messaging Endpoint**.
+8. Test your bot/agent on a channel (Test in Web Chat, Skype, Teams, etc.). User data is captured and logged as activity occurs.
 
 9. Once testing is completed, you can compile the project into an executable.
 
