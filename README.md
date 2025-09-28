@@ -5,7 +5,7 @@ This utility allows you to forward a message sent to a bot or agent hosted on an
 
 It is useful for debug scenarios or for more complex situations where you need to receive ChannelData in your requests from channels like WebChat hosted on websites.
 
-**Version: 1.1.0**
+**Version: 1.2.0**
 
 ## Acknowledgments 
 This project is a rewrite inspired by the original work that [Gabriel Gonzalez (gabog)](https://github.com/gabog) created in his project [AzureServiceBusBotRelay](https://github.com/gabog/AzureServiceBusBotRelay).
@@ -47,7 +47,7 @@ Part of this code is also based on the work that [Pedro Felix](https://github.co
     
     c. In the **Messaging endpoint** field, enter the service bus namespace and relay. The relay should match the relay name entered in the **appsettings.json** file.
     
-    d. Append **"/api/messages"** to the end to create the full endpoint to be used. For example, "https://example-service-bus.servicebus.windows.net/wcf-example-relay/api/messages".
+    d. Append **"/api/messages"** to the end to create the full endpoint to be used. For example, "https://example-relay.servicebus.windows.net/wcf-example-relay/api/messages".
     
     e. Click **Save** when completed.
    
@@ -185,7 +185,7 @@ The .NET Core version supports **ARM Template Automation** for dynamic hybrid co
     
     c. In the **Messaging endpoint** field, enter the service bus namespace and relay.
     
-    d. Append **"/api/messages"** to the end to create the full endpoint to be used. For example, "https://example-service-bus.servicebus.windows.net/hc1/api/messages".
+    d. Append **"/api/messages"** to the end to create the full endpoint to be used. For example, "https://example-relay.servicebus.windows.net/hc1/api/messages".
     
     e. Click **Save** when completed.
    
@@ -279,8 +279,8 @@ The **RelayTunnelUsingHybridConnection** project now includes:
 | `SubscriptionId` | string | Yes* | Your Azure subscription ID. Required if any relay uses `DynamicResourceCreation: true` |
 | `TenantId` | string | No | Azure tenant ID. Optional when using DefaultAzureCredential |
 | `UseDefaultAzureCredential` | boolean | No | If `true` (default), uses Azure CLI, Managed Identity, or Visual Studio credentials. If `false`, uses ClientId/ClientSecret |
-| `ClientId` | string | No | Service Principal client ID. Required if `UseDefaultAzureCredential: false` |
-| `ClientSecret` | string | No | Service Principal client secret. Required if `UseDefaultAzureCredential: false` |
+| `ClientId` | string | No* | Service Principal client ID. Required if `UseDefaultAzureCredential: false` |
+| `ClientSecret` | string | No* | Service Principal client secret. Required if `UseDefaultAzureCredential: false` |
 
 #### Relays Section
 | Property | Type | Required | Description |

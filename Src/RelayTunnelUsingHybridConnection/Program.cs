@@ -13,7 +13,7 @@ namespace RelayTunnelUsingHybridConnection
 
         public static async Task Main(string[] args)
         {
-            Console.WriteLine("Azure Service Bus Relay Utility (.NET Core)");
+            Console.WriteLine("Azure Relay Hybrid Connection Utility (.NET Core)");
             Console.WriteLine("============================================");
             Console.WriteLine();
 
@@ -78,13 +78,15 @@ namespace RelayTunnelUsingHybridConnection
                 Console.WriteLine($"Found {enabledRelayConfigs.Count} enabled relay configuration(s):");
                 foreach (var cfg in enabledRelayConfigs)
                 {
-                    Console.WriteLine($"  - {cfg.RelayName} → {cfg.TargetServiceAddress} (Dynamic: {cfg.DynamicResourceCreation})");
+                    Console.WriteLine($"  - {cfg.RelayName} --> {cfg.TargetServiceAddress} (Dynamic: {cfg.DynamicResourceCreation})");
                 }
                 Console.WriteLine();
 
                 var dispatcherServices = enabledRelayConfigs.Select(cfg =>
-                    new DispatcherService(cfg, resourceManager)
-                ).ToList();
+                {
+                  Console.WriteLine($"Dynamic resource creation enabled for '{cfg.RelayName}'");
+                    return new DispatcherService(cfg, resourceManager);
+                }).ToList();
 
                 var openTasks = dispatcherServices.Select(ds => ds.OpenAsync(CancellationToken.None)).ToList();
                 await Task.WhenAll(openTasks);

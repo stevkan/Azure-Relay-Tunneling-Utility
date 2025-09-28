@@ -16,7 +16,7 @@ namespace RelayTunnelUsingWCF
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Azure Service Bus WCF Relay Host (Multi-Relay)");
+            Console.WriteLine("Azure Relay WCF Utility (.NET Framework)");
             Console.WriteLine("===============================================");
 
             try
@@ -60,7 +60,7 @@ namespace RelayTunnelUsingWCF
 
                 Console.WriteLine();
                 Console.WriteLine($"✓ {_serviceHosts.Count} WCF Relay service(s) are now RUNNING and visible in Azure!");
-                Console.WriteLine("✓ The relay endpoints will appear in your Azure Service Bus namespace.");
+                Console.WriteLine("✓ The relay endpoints will appear in your Azure Relay namespace.");
                 Console.WriteLine("✓ Requests to the relays will be forwarded to their target services.");
                 Console.WriteLine();
                 Console.WriteLine("Press Ctrl+C or Enter to stop all services...");
