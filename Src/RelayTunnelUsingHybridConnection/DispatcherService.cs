@@ -44,7 +44,6 @@ namespace RelayTunnelUsingHybridConnection
             // Create the hybrid connection resource dynamically if requested
             if (_config.DynamicResourceCreation && _resourceManager != null)
             {
-                Console.WriteLine($"Dynamic resource creation enabled for '{_config.RelayName}'");
                 var created = await _resourceManager.CreateHybridConnectionAsync(_config);
                 if (!created)
                 {
@@ -57,7 +56,7 @@ namespace RelayTunnelUsingHybridConnection
 
             _listener.RequestHandler = ListenerRequestHandler;
             await _listener.OpenAsync(cancelToken);
-            Console.WriteLine("Azure Service Bus is listening on \n\r\t{0}\n\rand routing requests to \n\r\t{1}\n\r\n\r", _listener.Address, _httpClient.BaseAddress);
+            Console.WriteLine("Azure Relay is listening on \n\r\t{0}\n\rand routing requests to \n\r\t{1}\n\r\n\r", _listener.Address, _httpClient.BaseAddress);
             Console.WriteLine("Press [Enter] to exit");
         }
 
