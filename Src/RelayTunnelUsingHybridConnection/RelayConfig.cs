@@ -9,6 +9,10 @@ namespace RelayTunnelUsingHybridConnection
         public string PolicyKey { get; set; }
         public string TargetServiceAddress { get; set; }
         
+        // WebSocket Support properties
+        public bool EnableWebSocketSupport { get; set; } = true;
+        public string TargetWebSocketAddress { get; set; }
+        
         // ARM Resource Management properties
         public bool DynamicResourceCreation { get; set; } = false;
         public string ResourceGroupName { get; set; }

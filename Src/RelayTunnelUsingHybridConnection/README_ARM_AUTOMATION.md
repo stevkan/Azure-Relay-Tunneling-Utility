@@ -51,13 +51,16 @@ This document describes the implementation of ARM Template Automation in the Rel
 
 ### Authentication Options
 
-1. **Default Azure Credential** (Recommended)
-   - Uses Managed Identity, Azure CLI, Visual Studio, etc.
-   - Set `UseDefaultAzureCredential: true`
+1. **Default Azure Credential** (Recommended for Development)
+   - Uses Azure CLI, Managed Identity, Visual Studio, etc.
+   - Set `UseDefaultAzureCredential: true` (default)
+   - Leave `ClientId` and `ClientSecret` empty
+   - Run `az login` if using Azure CLI
 
-2. **Service Principal**
+2. **Service Principal** (Recommended for Production)
    - Set `UseDefaultAzureCredential: false`
    - Provide `ClientId` and `ClientSecret`
+   - Optionally specify `TenantId` for additional security
 
 ## 🚀 How It Works
 
@@ -95,13 +98,24 @@ This document describes the implementation of ARM Template Automation in the Rel
 ## 🔐 Security & Permissions
 
 ### Required Azure Permissions
-The authenticated identity needs:
-- **Contributor** role on the Resource Group, OR
+The authenticated identity needs one of:
+- **Contributor** role on the Resource Group containing your relay namespace
 - **Relay Namespace Contributor** role on the specific namespace
 
 ### Recommended Setup
-1. **Development**: Use Azure CLI authentication
-2. **Production**: Use Managed Identity with minimal required permissions
+1. **Development**: Use Azure CLI authentication (`az login`)
+2. **Production**: Use Service Principal or Managed Identity with minimal required permissions
+
+## 🐛 Common Issues
+
+### Subscription Mismatch
+- **Error**: "The Resource 'Microsoft.Relay/namespaces/...' was not found"
+- **Fix**: Ensure Azure CLI is using the correct subscription:
+  ```bash
+  az account show  # Check current subscription
+  az account set --subscription "your-subscription-id"  # Set correct subscription
+  ```
+- Verify the subscription ID in appsettings.json matches your Azure CLI subscription
 
 ## ⚡ Usage Examples
 

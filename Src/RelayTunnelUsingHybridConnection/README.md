@@ -1,6 +1,6 @@
 # RelayTunnelUsingHybridConnection
 
-**Version: 1.2.0**
+**Version: 1.3.0**
 
 This .NET 8 console application provides **Azure Hybrid Connection** functionality with optional **dynamic resource management** using ARM templates. Hybrid connections can be created/deleted automatically when the application starts/stops.
 
@@ -88,17 +88,28 @@ For automatic hybrid connection lifecycle management, add the AzureManagement se
 
 ## Authentication Options (for Dynamic Resource Creation)
 
-**Option 1: Azure CLI (Development)**
+**Option 1: Azure CLI (Recommended for Development)**
 - Run `az login` in your terminal
-- Set `UseDefaultAzureCredential: true`
+- Set `UseDefaultAzureCredential: true` (default)
+- Leave `ClientId` and `ClientSecret` empty
+- The app will automatically use your Azure CLI credentials
 
-**Option 2: Service Principal (Production)** 
+**Option 2: Service Principal (Recommended for Production)** 
+- Create a Service Principal with Contributor access to your resource group
 - Set `UseDefaultAzureCredential: false`
-- Provide `ClientId` and `ClientSecret` in configuration
+- Provide your `ClientId` and `ClientSecret` in the configuration
+- Optionally specify `TenantId` for additional security
 
-**Option 3: Managed Identity (Azure VMs/App Service)**
-- Assign Managed Identity to your resource
-- Set `UseDefaultAzureCredential: true`
+**Option 3: Managed Identity (For Azure VMs/App Service)**
+- Assign a Managed Identity to your VM/App Service in Azure
+- Grant the identity Contributor access to your resource group
+- Set `UseDefaultAzureCredential: true` (default)
+- Leave `ClientId` and `ClientSecret` empty
+
+**Required Azure Permissions:**
+The authenticated identity needs one of:
+- **Contributor** role on the Resource Group containing your relay namespace
+- **Relay Namespace Contributor** role on the specific namespace
 
 ## How to Run
 
@@ -190,9 +201,18 @@ This Hybrid Connection Host can work alongside your existing applications:
 - Ensure you're logged into Azure CLI (`az login`) or have valid service principal credentials
 - Verify the authenticated identity has sufficient permissions on the resource group
 
+**Subscription Mismatch (Common Issue)**
+- Error: "The Resource 'Microsoft.Relay/namespaces/...' was not found"
+- **Fix**: Ensure your Azure CLI is using the correct subscription:
+  ```bash
+  az account show  # Check current subscription
+  az account set --subscription "your-subscription-id"  # Set correct subscription
+  ```
+- Verify the subscription ID in appsettings.json matches your Azure CLI subscription
+
 **Resource Creation Failures**
 - Check that the `SubscriptionId` and `ResourceGroupName` are correct in appsettings.json
-- Ensure the relay namespace exists in the specified resource group
+- Ensure the relay namespace exists in the specified resource group (must be an Azure Relay namespace, not Service Bus)
 - Verify network connectivity to Azure ARM endpoints
 
 **Configuration Errors**
