@@ -5,7 +5,7 @@ This utility allows you to forward a message sent to a bot or agent hosted on an
 
 It is useful for debug scenarios or for more complex situations where you need to receive ChannelData in your requests from channels like WebChat hosted on websites.
 
-**Version: 1.2.0**
+**Version: 1.3.0**
 
 ## Acknowledgments 
 This project is a rewrite inspired by the original work that [Gabriel Gonzalez (gabog)](https://github.com/gabog) created in his project [AzureServiceBusBotRelay](https://github.com/gabog/AzureServiceBusBotRelay).
@@ -218,13 +218,13 @@ The .NET Core version supports **ARM Template Automation** for dynamic hybrid co
 
 ## Dependencies and Architecture
 
-### .NET Core Project Architecture
-The **RelayTunnelUsingHybridConnection** project now includes:
+### .NET Core Project Architecture (.NET 8)
+The **RelayTunnelUsingHybridConnection** project includes:
 
 - **Core Relay Functionality**: HTTP request proxying using Microsoft.Azure.Relay
 - **ARM Template Automation**: Dynamic resource management using Azure.ResourceManager libraries
 - **Multi-Relay Support**: Configure multiple relay endpoints in a single application
-- **Flexible Authentication**: Support for various Azure authentication methods
+- **Flexible Authentication**: Support for various Azure authentication methods (Azure CLI, Service Principal, Managed Identity)
 
 ### Key NuGet Packages
 - **Microsoft.Azure.Relay** (v2.0.0) - Core hybrid connection functionality
@@ -317,5 +317,6 @@ The **RelayTunnelUsingHybridConnection** project now includes:
 | **Relay Type** | Hybrid Connections | WCF Relay |
 | **Dynamic Creation** | ✅ Supported via ARM | ❌ Not supported |
 | **Namespace Format** | Full URL required | Name only |
-| **Authentication** | Multiple options | SAS key only |
+| **Authentication** | Multiple options (Azure CLI, Service Principal, Managed Identity) | SAS key only |
+| **.NET Version** | .NET 8 | .NET Framework |
 | **Modern Support** | ✅ Supported | ⚠️ Legacy (deprecated libraries) |
