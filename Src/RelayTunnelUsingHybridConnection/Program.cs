@@ -124,8 +124,27 @@ namespace RelayTunnelUsingHybridConnection
                 };
                 SetConsoleCtrlHandler(_consoleCtrlHandler, true);
 
-                Console.WriteLine("Press Enter or Ctrl+C to stop...");
-                var readLineTask = Task.Run(() => Console.ReadLine());
+                var completedTask = await Task.WhenAny(readLineTask, exitTask);
+
+                // Ensure both tasks are completed before proceeding to shutdown
+                if (completedTask == exitTask && !readLineTask.IsCompleted)
+                {
+                    // Try to signal Console.ReadLine to complete by sending a newline
+                    try
+                    {
+                        if (!Console.IsInputRedirected)
+                        {
+                            Console.WriteLine();
+                        }
+                    }
+                    catch { /* Ignore any errors */ }
+                    await readLineTask;
+                }
+                else if (completedTask == readLineTask && !exitTask.IsCompleted)
+                {
+                    exitEvent.Set();
+                    await exitTask;
+                }
                 var exitTask = Task.Run(() => exitEvent.WaitOne());
                 await Task.WhenAny(readLineTask, exitTask);
 
