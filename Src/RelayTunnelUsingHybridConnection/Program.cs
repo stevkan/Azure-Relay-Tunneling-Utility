@@ -18,6 +18,7 @@ namespace RelayTunnelUsingHybridConnection
         private const int CTRL_CLOSE_EVENT = 2;
         private const int CTRL_LOGOFF_EVENT = 5;
         private const int CTRL_SHUTDOWN_EVENT = 6;
+        private const int DEFAULT_SHUTDOWN_TIMEOUT_SECONDS = 30;
 
         public static IConfiguration Configuration { get; set; }
 
@@ -114,7 +115,6 @@ namespace RelayTunnelUsingHybridConnection
                     if (ctrlType == CTRL_CLOSE_EVENT || ctrlType == CTRL_LOGOFF_EVENT || ctrlType == CTRL_SHUTDOWN_EVENT)
                     {
                         exitEvent.Set();
-                        Thread.Sleep(5000);
                         return true;
                     }
                     return false;
@@ -127,8 +127,25 @@ namespace RelayTunnelUsingHybridConnection
                 await Task.WhenAny(readLineTask, exitTask);
 
                 Console.WriteLine("Shutting down and cleaning up resources...");
-                var closeTasks = dispatcherServices.Select(ds => ds.CloseAsync(CancellationToken.None)).ToList();
-                await Task.WhenAll(closeTasks);
+                
+                // Get configurable shutdown timeout or use default
+                var shutdownTimeoutSeconds = Configuration.GetValue<int?>("ShutdownTimeoutSeconds") ?? DEFAULT_SHUTDOWN_TIMEOUT_SECONDS;
+                using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(shutdownTimeoutSeconds));
+                
+                try
+                {
+                    var closeTasks = dispatcherServices.Select(ds => ds.CloseAsync(shutdownCts.Token)).ToList();
+                    await Task.WhenAll(closeTasks);
+                    Console.WriteLine("✓ All resources cleaned up successfully");
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine($"⚠️ Shutdown timeout ({shutdownTimeoutSeconds}s) exceeded. Some resources may not have cleaned up properly.");
+                }
+                catch (Exception cleanupEx)
+                {
+                    Console.WriteLine($"⚠️ Error during cleanup: {cleanupEx.Message}");
+                }
             }
             catch (Exception ex)
             {
