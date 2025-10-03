@@ -12,11 +12,19 @@ namespace RelayTunnelUsingHybridConnection
             get => _relayName;
             set
             {
-                _relayName = value?.ToLowerInvariant();
-                // Track if conversion happened for warning
-                if (!string.IsNullOrEmpty(value) && value != _relayName)
+                // Track if conversion happened for warning (before converting)
+                if (!string.IsNullOrEmpty(value))
                 {
-                    OriginalRelayName = value;
+                    var lowercased = value.ToLowerInvariant();
+                    if (value != lowercased)
+                    {
+                        OriginalRelayName = value;
+                    }
+                    _relayName = lowercased;
+                }
+                else
+                {
+                    _relayName = value;
                 }
             }
         }
