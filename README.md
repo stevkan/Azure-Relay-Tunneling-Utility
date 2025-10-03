@@ -5,7 +5,7 @@ This utility allows you to forward a message sent to a bot or agent hosted on an
 
 It is useful for debug scenarios or for more complex situations where you need to receive ChannelData in your requests from channels like WebChat hosted on websites.
 
-**Version: 1.3.2**
+**Version: 1.3.3**
 
 ## Acknowledgments 
 This project is a rewrite inspired by the original work that [Gabriel Gonzalez (gabog)](https://github.com/gabog) created in his project [AzureServiceBusBotRelay](https://github.com/gabog/AzureServiceBusBotRelay).
