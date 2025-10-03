@@ -145,9 +145,6 @@ namespace RelayTunnelUsingHybridConnection
                     exitEvent.Set();
                     await exitTask;
                 }
-                var exitTask = Task.Run(() => exitEvent.WaitOne());
-                await Task.WhenAny(readLineTask, exitTask);
-
                 Console.WriteLine("Shutting down and cleaning up resources...");
                 
                 // Get configurable shutdown timeout or use default
