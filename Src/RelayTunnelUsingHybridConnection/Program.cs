@@ -4,11 +4,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace RelayTunnelUsingHybridConnection
 {
     public class Program
     {
+        private delegate bool ConsoleCtrlDelegate(int dwCtrlType);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handler, bool add);
+
+        private const int CTRL_CLOSE_EVENT = 2;
+        private const int CTRL_LOGOFF_EVENT = 5;
+        private const int CTRL_SHUTDOWN_EVENT = 6;
+
         public static IConfiguration Configuration { get; set; }
 
         public static async Task Main(string[] args)
@@ -91,8 +101,32 @@ namespace RelayTunnelUsingHybridConnection
                 var openTasks = dispatcherServices.Select(ds => ds.OpenAsync(CancellationToken.None)).ToList();
                 await Task.WhenAll(openTasks);
 
-                Console.ReadLine();
+                var exitEvent = new ManualResetEvent(false);
+                
+                Console.CancelKeyPress += (sender, e) =>
+                {
+                    e.Cancel = true;
+                    exitEvent.Set();
+                };
 
+                ConsoleCtrlDelegate consoleCtrlHandler = ctrlType =>
+                {
+                    if (ctrlType == CTRL_CLOSE_EVENT || ctrlType == CTRL_LOGOFF_EVENT || ctrlType == CTRL_SHUTDOWN_EVENT)
+                    {
+                        exitEvent.Set();
+                        Thread.Sleep(5000);
+                        return true;
+                    }
+                    return false;
+                };
+                SetConsoleCtrlHandler(consoleCtrlHandler, true);
+
+                Console.WriteLine("Press Enter or Ctrl+C to stop...");
+                var readLineTask = Task.Run(() => Console.ReadLine());
+                var exitTask = Task.Run(() => exitEvent.WaitOne());
+                await Task.WhenAny(readLineTask, exitTask);
+
+                Console.WriteLine("Shutting down and cleaning up resources...");
                 var closeTasks = dispatcherServices.Select(ds => ds.CloseAsync(CancellationToken.None)).ToList();
                 await Task.WhenAll(closeTasks);
             }
