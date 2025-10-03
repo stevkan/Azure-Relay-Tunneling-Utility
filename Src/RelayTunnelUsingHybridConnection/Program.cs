@@ -105,7 +105,7 @@ namespace RelayTunnelUsingHybridConnection
                 var openTasks = dispatcherServices.Select(ds => ds.OpenAsync(CancellationToken.None)).ToList();
                 await Task.WhenAll(openTasks);
 
-                var exitEvent = new ManualResetEvent(false);
+                using var exitEvent = new ManualResetEvent(false);
                 
                 Console.CancelKeyPress += (sender, e) =>
                 {
