@@ -20,6 +20,9 @@ namespace RelayTunnelUsingHybridConnection
         private const int CTRL_SHUTDOWN_EVENT = 6;
         private const int DEFAULT_SHUTDOWN_TIMEOUT_SECONDS = 30;
 
+        // Keep delegate alive to prevent garbage collection while native code holds reference
+        private static ConsoleCtrlDelegate _consoleCtrlHandler;
+
         public static IConfiguration Configuration { get; set; }
 
         public static async Task Main(string[] args)
@@ -110,7 +113,7 @@ namespace RelayTunnelUsingHybridConnection
                     exitEvent.Set();
                 };
 
-                ConsoleCtrlDelegate consoleCtrlHandler = ctrlType =>
+                _consoleCtrlHandler = ctrlType =>
                 {
                     if (ctrlType == CTRL_CLOSE_EVENT || ctrlType == CTRL_LOGOFF_EVENT || ctrlType == CTRL_SHUTDOWN_EVENT)
                     {
@@ -119,7 +122,7 @@ namespace RelayTunnelUsingHybridConnection
                     }
                     return false;
                 };
-                SetConsoleCtrlHandler(consoleCtrlHandler, true);
+                SetConsoleCtrlHandler(_consoleCtrlHandler, true);
 
                 Console.WriteLine("Press Enter or Ctrl+C to stop...");
                 var readLineTask = Task.Run(() => Console.ReadLine());
