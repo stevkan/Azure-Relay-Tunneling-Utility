@@ -124,6 +124,10 @@ namespace RelayTunnelUsingHybridConnection
                 };
                 SetConsoleCtrlHandler(_consoleCtrlHandler, true);
 
+                Console.WriteLine("Press Enter or Ctrl+C to stop...");
+                var readLineTask = Task.Run(() => Console.ReadLine());
+                var exitTask = Task.Run(() => exitEvent.WaitOne());
+
                 var completedTask = await Task.WhenAny(readLineTask, exitTask);
 
                 // Ensure both tasks are completed before proceeding to shutdown
