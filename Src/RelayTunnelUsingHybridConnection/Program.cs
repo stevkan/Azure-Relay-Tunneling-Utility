@@ -92,13 +92,12 @@ namespace RelayTunnelUsingHybridConnection
                 Console.WriteLine($"Found {enabledRelayConfigs.Count} enabled relay configuration(s):");
                 foreach (var cfg in enabledRelayConfigs)
                 {
-                    Console.WriteLine($"  - {cfg.RelayName} --> {cfg.TargetServiceAddress} (Dynamic: {cfg.DynamicResourceCreation})");
+                    Console.WriteLine($"  \u263A {cfg.RelayName} --> {cfg.TargetServiceAddress} (Dynamic: {cfg.DynamicResourceCreation})");
                 }
                 Console.WriteLine();
 
                 var dispatcherServices = enabledRelayConfigs.Select(cfg =>
                 {
-                  Console.WriteLine($"Dynamic resource creation enabled for '{cfg.RelayName}'");
                     return new DispatcherService(cfg, resourceManager);
                 }).ToList();
 

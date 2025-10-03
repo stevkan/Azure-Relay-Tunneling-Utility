@@ -5,7 +5,7 @@ This utility allows you to forward a message sent to a bot or agent hosted on an
 
 It is useful for debug scenarios or for more complex situations where you need to receive ChannelData in your requests from channels like WebChat hosted on websites.
 
-**Version: 1.3.4**
+**Version: 1.3.5**
 
 ## Acknowledgments 
 This project is a rewrite inspired by the original work that [Gabriel Gonzalez (gabog)](https://github.com/gabog) created in his project [AzureServiceBusBotRelay](https://github.com/gabog/AzureServiceBusBotRelay).
@@ -118,7 +118,7 @@ The authenticated identity needs one of:
 #### Relay Configuration
 For each relay in the "Relays" array, configure:
 
-a. **"RelayNamespace"** - The name of your Azure Relay namespace (e.g., "your-namespace.servicebus.windows.net").
+a. **"RelayNamespace"** - The name of your Azure Relay namespace (e.g., "your-namespace").
 
 b. **"RelayName"** - The name of the hybrid connection.
 
@@ -143,7 +143,7 @@ h. **"ResourceGroupName"** - Required if DynamicResourceCreation is true. The Az
   },
   "Relays": [
     {
-      "RelayNamespace": "[your-relay-namespace].servicebus.windows.net",
+      "RelayNamespace": "[your-relay-namespace]",
       "RelayName": "[your-relay-name]", 
       "PolicyName": "[your-policy-name]",
       "PolicyKey": "[your-policy-key]",
@@ -285,7 +285,7 @@ The **RelayTunnelUsingHybridConnection** project includes:
 #### Relays Section
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
-| `RelayNamespace` | string | Yes | Full namespace URL (e.g., "namespace.servicebus.windows.net") |
+| `RelayNamespace` | string | Yes | Relay namespace name (e.g., "namespace") - ".servicebus.windows.net" is appended automatically |
 | `RelayName` | string | Yes | Name of the hybrid connection |
 | `PolicyName` | string | Yes | Name of the shared access policy |
 | `PolicyKey` | string | Yes | Key for the shared access policy |
