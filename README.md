@@ -5,7 +5,7 @@ This utility allows you to forward a message sent to a bot or agent hosted on an
 
 It is useful for debug scenarios or for more complex situations where you need to receive ChannelData in your requests from channels like WebChat hosted on websites.
 
-**Version: 1.3.6**
+**Version: 1.3.7**
 
 ## Acknowledgments 
 This project is a rewrite inspired by the original work that [Gabriel Gonzalez (gabog)](https://github.com/gabog) created in his project [AzureServiceBusBotRelay](https://github.com/gabog/AzureServiceBusBotRelay).
@@ -120,7 +120,7 @@ For each relay in the "Relays" array, configure:
 
 a. **"RelayNamespace"** - The name of your Azure Relay namespace (e.g., "your-namespace").
 
-b. **"RelayName"** - The name of the hybrid connection.
+b. **"RelayName"** - The name of the hybrid connection. **Note:** Azure requires lowercase. Uppercase letters are automatically converted to lowercase.
 
 c. **"PolicyName"** - The name of the shared access policy.
 
@@ -286,7 +286,7 @@ The **RelayTunnelUsingHybridConnection** project includes:
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `RelayNamespace` | string | Yes | Relay namespace name (e.g., "namespace") - ".servicebus.windows.net" is appended automatically |
-| `RelayName` | string | Yes | Name of the hybrid connection |
+| `RelayName` | string | Yes | Name of the hybrid connection (automatically converted to lowercase) |
 | `PolicyName` | string | Yes | Name of the shared access policy |
 | `PolicyKey` | string | Yes | Key for the shared access policy |
 | `TargetServiceAddress` | string | Yes | Local service URL to proxy requests to (e.g., "http://localhost:3978") |
