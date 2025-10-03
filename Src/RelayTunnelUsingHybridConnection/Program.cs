@@ -33,7 +33,7 @@ namespace RelayTunnelUsingHybridConnection
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", true, true)
+                .AddJsonFile("appsettings.json", false, true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
 
