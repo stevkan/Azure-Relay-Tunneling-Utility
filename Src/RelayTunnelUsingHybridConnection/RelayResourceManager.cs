@@ -37,7 +37,6 @@ namespace RelayTunnelUsingHybridConnection
             try
             {
                 var namespaceShortName = GetNamespaceFromFqdn(config.RelayNamespace);
-                Console.WriteLine($"Creating Hybrid Connection '{config.RelayName}' in namespace '{namespaceShortName}'...");
 
                 var subscription = _armClient.GetSubscriptionResource(Azure.Core.ResourceIdentifier.Root.AppendChildResource("subscriptions", _subscriptionId));
                 var subscriptionData = await subscription.GetAsync();
@@ -56,17 +55,16 @@ namespace RelayTunnelUsingHybridConnection
                     config.RelayName,
                     hybridConnectionData);
 
-                Console.WriteLine($"✓ Hybrid Connection '{config.RelayName}' created successfully");
                 return operation.HasCompleted;
             }
             catch (RequestFailedException ex) when (ex.Status == 409)
             {
-                Console.WriteLine($"⚠ Hybrid Connection '{config.RelayName}' already exists");
-                return true; // Already exists, consider it successful
+                // Already exists, consider it successful
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error creating Hybrid Connection '{config.RelayName}': {ex.Message}");
+                Console.WriteLine($"❌ Error creating '{config.RelayName}': {ex.Message}");
                 return false;
             }
         }
@@ -75,7 +73,7 @@ namespace RelayTunnelUsingHybridConnection
         {
             try
             {
-                Console.WriteLine($"Deleting Hybrid Connection '{config.RelayName}' from namespace '{GetNamespaceFromFqdn(config.RelayNamespace)}'...");
+                Console.WriteLine($"Deleting '{config.RelayName}'...");
 
                 var subscription = _armClient.GetSubscriptionResource(Azure.Core.ResourceIdentifier.Root.AppendChildResource("subscriptions", _subscriptionId));
                 var subscriptionData = await subscription.GetAsync();
@@ -87,23 +85,21 @@ namespace RelayTunnelUsingHybridConnection
                 if (hybridConnection.Value != null)
                 {
                     var operation = await hybridConnection.Value.DeleteAsync(WaitUntil.Completed);
-                    Console.WriteLine($"✓ Hybrid Connection '{config.RelayName}' deleted successfully");
+                    Console.WriteLine($"✓ Deleted '{config.RelayName}'");
                     return operation.HasCompleted;
                 }
                 else
                 {
-                    Console.WriteLine($"⚠ Hybrid Connection '{config.RelayName}' not found (may already be deleted)");
                     return true;
                 }
             }
             catch (RequestFailedException ex) when (ex.Status == 404)
             {
-                Console.WriteLine($"⚠ Hybrid Connection '{config.RelayName}' not found (may already be deleted)");
                 return true; // Not found, consider deletion successful
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error deleting Hybrid Connection '{config.RelayName}': {ex.Message}");
+                Console.WriteLine($"❌ Error deleting '{config.RelayName}': {ex.Message}");
                 return false;
             }
         }
@@ -131,14 +127,15 @@ namespace RelayTunnelUsingHybridConnection
             }
         }
 
-        private static string GetNamespaceFromFqdn(string fqdn)
+        private static string GetNamespaceFromFqdn(string namespaceValue)
         {
             // Convert "common-relay.servicebus.windows.net" to "common-relay"
-            if (fqdn.Contains(".servicebus.windows.net"))
+            // Also handles when user provides just "common-relay" (without FQDN)
+            if (namespaceValue.Contains(".servicebus.windows.net"))
             {
-                return fqdn.Replace(".servicebus.windows.net", "");
+                return namespaceValue.Replace(".servicebus.windows.net", "");
             }
-            return fqdn;
+            return namespaceValue;
         }
     }
 }

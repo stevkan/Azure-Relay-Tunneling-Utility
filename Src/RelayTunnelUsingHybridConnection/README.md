@@ -1,6 +1,6 @@
 # RelayTunnelUsingHybridConnection
 
-**Version: 1.3.2**
+**Version: 1.3.3**
 
 This .NET 8 console application provides **Azure Hybrid Connection** functionality with optional **dynamic resource management** using ARM templates. Hybrid connections can be created/deleted automatically when the application starts/stops.
 
@@ -30,7 +30,7 @@ Update the `appsettings.json` file with your Azure Relay settings. The applicati
 {
   "Relays": [
     {
-      "RelayNamespace": "your-relay-namespace.servicebus.windows.net",
+      "RelayNamespace": "your-relay-namespace",
       "RelayName": "your-relay-name",
       "PolicyName": "root-shared-access-key-name",
       "PolicyKey": "root-shared-access-key",
@@ -39,7 +39,7 @@ Update the `appsettings.json` file with your Azure Relay settings. The applicati
       "DynamicResourceCreation": false
     },
     {
-      "RelayNamespace": "your-relay-namespace.servicebus.windows.net",
+      "RelayNamespace": "your-relay-namespace",
       "RelayName": "another-relay-name",
       "PolicyName": "root-shared-access-key-name",
       "PolicyKey": "root-shared-access-key",
@@ -63,7 +63,7 @@ For automatic hybrid connection lifecycle management, add the AzureManagement se
   },
   "Relays": [
     {
-      "RelayNamespace": "your-relay-namespace.servicebus.windows.net",
+      "RelayNamespace": "your-relay-namespace",
       "RelayName": "your-relay-name",
       "PolicyName": "root-shared-access-key-name", 
       "PolicyKey": "root-shared-access-key",
@@ -73,7 +73,7 @@ For automatic hybrid connection lifecycle management, add the AzureManagement se
       "ResourceGroupName": "your-resource-group-name"
     },
     {
-      "RelayNamespace": "your-relay-namespace.servicebus.windows.net",
+      "RelayNamespace": "your-relay-namespace",
       "RelayName": "another-relay-name",
       "PolicyName": "root-shared-access-key-name", 
       "PolicyKey": "root-shared-access-key",
@@ -134,7 +134,7 @@ RelayTunnelUsingHybridConnection.exe
 Before testing, update your Azure Bot's messaging endpoint:
 1. Login to the Azure portal and open your Azure Bot registration
 2. Select **Settings** under Bot management  
-3. In **Messaging endpoint**, enter: `https://your-relay-namespace.servicebus.windows.net/your-relay-name/api/messages`
+3. In **Messaging endpoint**, enter: `https://[your-relay-namespace].servicebus.windows.net/your-relay-name/api/messages`
 4. Click **Save**
 
 ## Usage Flow
@@ -191,7 +191,7 @@ This Hybrid Connection Host can work alongside your existing applications:
 
 1. **Start your local service** on the configured target address (e.g., `http://localhost:3978`)
 2. **Start this Hybrid Connection Host** to create the connection in Azure  
-3. **Access via Azure**: Requests to `https://your-relay-namespace.servicebus.windows.net/your-relay-name` will be proxied to your local service
+3. **Access via Azure**: Requests to `https://[your-relay-namespace].servicebus.windows.net/your-relay-name` will be proxied to your local service
 
 **Note**: This project uses Azure Relay Hybrid Connections (modern), which is different from the WCF Relay approach used in the RelayTunnelUsingWCF project. Both serve similar purposes but use different Azure technologies.
 
