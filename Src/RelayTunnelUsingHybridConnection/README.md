@@ -1,6 +1,6 @@
 # RelayTunnelUsingHybridConnection
 
-**Version: 1.3.4**
+**Version: 1.3.5**
 
 This .NET 8 console application provides **Azure Hybrid Connection** functionality with optional **dynamic resource management** using ARM templates. Hybrid connections can be created/deleted automatically when the application starts/stops.
 
@@ -50,6 +50,8 @@ Update the `appsettings.json` file with your Azure Relay settings. The applicati
   ]
 }
 ```
+
+**Note:** Azure Relay requires lowercase names. If you specify uppercase letters in `RelayName`, they will be automatically converted to lowercase with a warning displayed at startup.
 
 ### Dynamic Resource Creation (Optional)
 

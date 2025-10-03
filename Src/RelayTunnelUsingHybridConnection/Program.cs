@@ -92,7 +92,13 @@ namespace RelayTunnelUsingHybridConnection
                 Console.WriteLine($"Found {enabledRelayConfigs.Count} enabled relay configuration(s):");
                 foreach (var cfg in enabledRelayConfigs)
                 {
-                    Console.WriteLine($"  \u263A {cfg.RelayName} --> {cfg.TargetServiceAddress} (Dynamic: {cfg.DynamicResourceCreation})");
+                    Console.WriteLine($"  • {cfg.RelayName} → {cfg.TargetServiceAddress} (Dynamic: {cfg.DynamicResourceCreation})");
+                    
+                    // Warn if relay name was auto-converted to lowercase
+                    if (!string.IsNullOrEmpty(cfg.OriginalRelayName))
+                    {
+                        Console.WriteLine($"    ⚠ Relay name '{cfg.OriginalRelayName}' converted to '{cfg.RelayName}' (Azure requires lowercase)");
+                    }
                 }
                 Console.WriteLine();
 
