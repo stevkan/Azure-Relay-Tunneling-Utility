@@ -1,15 +1,18 @@
 # RelayTunnelUsingHybridConnection
 
-**Version: 1.3.6**
+**Version: 1.3.7**
 
 This .NET 8 console application provides **Azure Hybrid Connection** functionality with optional **dynamic resource management** using ARM templates. Hybrid connections can be created/deleted automatically when the application starts/stops.
 
-## Acknowledgments 
-This project is part of a rewrite inspired by the original work that [Gabriel Gonzalez (gabog)](https://github.com/gabog) created in his project [AzureServiceBusBotRelay](https://github.com/gabog/AzureServiceBusBotRelay).
+## 🎯 Overview
 
-Part of this code is also based on the work that [Pedro Felix](https://github.com/pmhsfelix) did in his project [here](https://github.com/pmhsfelix/WebApi.Explorations.ServiceBusRelayHost).
+An HTTP tunneling utility that forwards HTTP traffic from Azure to your local machine. This is useful for:
+- Exposing local web servers, APIs, or HTTP services through Azure endpoints
+- Debugging bots and agents locally while receiving real traffic from Azure-hosted channels
+- Testing with real ChannelData from channels like WebChat, Teams, Skype
+- Development and testing without deploying to Azure
 
-## Features
+## ✨ Features
 
 ✅ **Hybrid Connection Support**: Uses Azure Relay Hybrid Connections (modern approach)  
 ✅ **Dynamic Resource Creation**: Optional ARM template automation - resources appear/disappear automatically  
@@ -18,31 +21,32 @@ Part of this code is also based on the work that [Pedro Felix](https://github.co
 ✅ **Flexible Authentication**: Azure CLI, Service Principal, or Managed Identity  
 ✅ **Comprehensive Configuration**: Full JSON-based configuration system  
 
-## Configuration
+## 📋 Prerequisites
 
-**Important**: After cloning, rename `appsettings-template.json` to `appsettings.json` (this file is in .gitignore to prevent accidental credential commits).
+- .NET 8 Runtime must be installed
+- Visual Studio or .NET CLI (for building)
+- Azure Relay namespace with SAS policy credentials
+- Local bot/agent service to proxy requests to
+- (Optional) Azure CLI or Service Principal for dynamic resource creation
 
-Update the `appsettings.json` file with your Azure Relay settings. The application supports multiple relay configurations in an array format:
+## ⚙️ Quick Start Configuration
 
-### Basic Configuration
+**Step 1:** Rename `appsettings-template.json` to `appsettings.json`
+
+**Step 2:** Choose your mode and configure:
+
+### Static Resources (Simpler - Good for Getting Started)
+
+Pre-create hybrid connection in Azure Portal, then:
 
 ```json
 {
   "Relays": [
     {
-      "RelayNamespace": "your-relay-namespace",
+      "RelayNamespace": "your-namespace",
       "RelayName": "your-relay-name",
-      "PolicyName": "root-shared-access-key-name",
-      "PolicyKey": "root-shared-access-key",
-      "TargetServiceAddress": "http://localhost:3978",
-      "IsEnabled": true,
-      "DynamicResourceCreation": false
-    },
-    {
-      "RelayNamespace": "your-relay-namespace",
-      "RelayName": "another-relay-name",
-      "PolicyName": "root-shared-access-key-name",
-      "PolicyKey": "root-shared-access-key",
+      "PolicyName": "RootManageSharedAccessKey",
+      "PolicyKey": "your-key",
       "TargetServiceAddress": "http://localhost:3978",
       "IsEnabled": true,
       "DynamicResourceCreation": false
@@ -51,76 +55,53 @@ Update the `appsettings.json` file with your Azure Relay settings. The applicati
 }
 ```
 
-**Note:** Azure Relay requires lowercase names. If you specify uppercase letters in `RelayName`, they will be automatically converted to lowercase with a warning displayed at startup.
+### Dynamic Resources (Advanced - Auto Create/Delete)
 
-### Dynamic Resource Creation (Optional)
-
-For automatic hybrid connection lifecycle management, add the AzureManagement section:
+Requires Azure authentication:
 
 ```json
 {
   "AzureManagement": {
-    "SubscriptionId": "your-azure-subscription-id",
+    "SubscriptionId": "your-subscription-id",
     "UseDefaultAzureCredential": true
   },
   "Relays": [
     {
-      "RelayNamespace": "your-relay-namespace",
+      "RelayNamespace": "your-namespace",
       "RelayName": "your-relay-name",
-      "PolicyName": "root-shared-access-key-name", 
-      "PolicyKey": "root-shared-access-key",
+      "PolicyName": "RootManageSharedAccessKey",
+      "PolicyKey": "your-key",
       "TargetServiceAddress": "http://localhost:3978",
       "IsEnabled": true,
       "DynamicResourceCreation": true,
-      "ResourceGroupName": "your-resource-group-name"
-    },
-    {
-      "RelayNamespace": "your-relay-namespace",
-      "RelayName": "another-relay-name",
-      "PolicyName": "root-shared-access-key-name", 
-      "PolicyKey": "root-shared-access-key",
-      "TargetServiceAddress": "http://localhost:3978",
-      "IsEnabled": true,
-      "DynamicResourceCreation": true,
-      "ResourceGroupName": "your-resource-group-name"
+      "ResourceGroupName": "your-resource-group"
     }
   ]
 }
 ```
 
-## Authentication Options (for Dynamic Resource Creation)
+**Note:** Azure requires lowercase relay names. Uppercase letters are auto-converted.
 
-**Option 1: Azure CLI (Recommended for Development)**
-- Run `az login` in your terminal
-- Set `UseDefaultAzureCredential: true` (default)
-- Leave `ClientId` and `ClientSecret` empty
-- The app will automatically use your Azure CLI credentials
+**📚 Full configuration reference:** See [Configuration Properties](#configuration-properties) below
 
-**Option 2: Service Principal (Recommended for Production)** 
-- Create a Service Principal with Contributor access to your resource group
-- Set `UseDefaultAzureCredential: false`
-- Provide your `ClientId` and `ClientSecret` in the configuration
-- Optionally specify `TenantId` for additional security
+## 🔐 Authentication (for Dynamic Resource Creation)
 
-**Option 3: Managed Identity (For Azure VMs/App Service)**
-- Assign a Managed Identity to your VM/App Service in Azure
-- Grant the identity Contributor access to your resource group
-- Set `UseDefaultAzureCredential: true` (default)
-- Leave `ClientId` and `ClientSecret` empty
+If you're using `DynamicResourceCreation: true`, you need Azure permissions. Three authentication methods are available:
 
-**Required Azure Permissions:**
-The authenticated identity needs one of:
-- **Contributor** role on the Resource Group containing your relay namespace
-- **Relay Namespace Contributor** role on the specific namespace
+**Quick Setup:**
+1. **Azure CLI** (Development) - Run `az login`, set `UseDefaultAzureCredential: true`
+2. **Service Principal** (Production) - Set `UseDefaultAzureCredential: false`, provide `ClientId` and `ClientSecret`
+3. **Managed Identity** (Azure VMs/App Service) - Set `UseDefaultAzureCredential: true`
 
-## How to Run
+**Required Permissions:**
+- **Contributor** role on Resource Group, or
+- **Relay Namespace Contributor** role on the namespace
 
-1. **Prerequisites**: .NET 8 Runtime must be installed
-2. **Clone and Setup**: Clone the repository and rename `appsettings-template.json` to `appsettings.json`
-3. **Configure**: Update `appsettings.json` with your settings
-4. **Authentication** (if using dynamic creation): Ensure Azure authentication is configured
-5. **Build**: Restore packages and build the project
-6. **Run**: Execute `RelayTunnelUsingHybridConnection.exe`
+📚 **For detailed authentication setup, see:** [Authentication Guide](../../docs/AUTHENTICATION.md)
+
+## 🚀 How to Run
+
+### Build and Run
 
 ```bash
 # Build the project (or use Visual Studio)
@@ -132,14 +113,69 @@ dotnet run
 RelayTunnelUsingHybridConnection.exe
 ```
 
-### Azure Bot Configuration
-Before testing, update your Azure Bot's messaging endpoint:
-1. Login to the Azure portal and open your Azure Bot registration
-2. Select **Settings** under Bot management  
-3. In **Messaging endpoint**, enter: `https://[your-relay-namespace].servicebus.windows.net/your-relay-name/api/messages`
-4. Click **Save**
+Or in Visual Studio, press **F5** to run the project.
 
-## Usage Flow
+### Configure Azure Bot Messaging Endpoint
+
+Before testing the relay, your Azure Bot's messaging endpoint must be updated:
+
+1. Login to the Azure portal and open your Azure Bot's registration
+2. Select **Settings** under Bot management to open the settings blade
+3. In the **Messaging endpoint** field, enter the service bus namespace and relay
+4. Append **"/api/messages"** to the end. For example:
+   ```
+   https://[your-relay-namespace].servicebus.windows.net/[your-relay-name]/api/messages
+   ```
+5. Click **Save**
+
+### Test Your Bot
+
+1. Open and run your locally hosted bot/agent on the configured target address (e.g., `http://localhost:3978`)
+2. Test your bot/agent on a channel (Test in Web Chat, Skype, Teams, etc.)
+3. User data is captured and logged as activity occurs
+
+### Stop the Application
+
+Press **Ctrl+C** or **Enter** to stop. If using dynamic resource creation, the hybrid connection resources will be automatically deleted from Azure.
+
+## 📤 Publishing Executable
+
+To compile as a self-contained executable:
+
+1. Right-click project → **Publish**
+2. Select **Folder** as target
+3. Click **Create Profile**
+4. Click **Configure** and set:
+   - Configuration: "Debug | Any CPU"
+   - Deployment Mode: "Self-contained"
+   - Target Runtime: "win-x64"
+5. Click **Save** → **Publish**
+
+Output location: `/bin/debug` folder with all necessary files. The `appsettings.json` can be edited without recompiling.
+
+## 📝 Example Output
+
+```
+Azure Relay Hybrid Connection Utility (.NET Core)
+============================================
+
+Initializing Azure Resource Manager...
+√ Azure Resource Manager initialized
+Found 1 enabled relay configuration(s):
+  - my-relay --> http://localhost:3978 (Dynamic: True)
+
+Creating Hybrid Connection 'my-relay' in namespace 'my-namespace'...
+√ Hybrid Connection 'my-relay' created successfully
+
+Azure Relay is listening on
+        sb://[your-relay-namespace].servicebus.windows.net/[your-relay-name]
+and routing requests to
+        http://localhost:3978/
+
+Press [Enter] to exit
+```
+
+## 🔄 Usage Flow
 
 1. **Start**: Run the console application
 2. **Resource Creation** (if dynamic): Hybrid connection resources are created in Azure
@@ -148,78 +184,96 @@ Before testing, update your Azure Bot's messaging endpoint:
 5. **Stop**: Press Ctrl+C or Enter to stop
 6. **Cleanup** (if dynamic): The hybrid connection resources are automatically deleted from Azure
 
-## Example Output
+## 🆚 Dynamic vs Static Resources
 
-```
-Azure Relay Hybrid Connection Utility (.NET Core)
-============================================
+**Dynamic** (`DynamicResourceCreation: true`)
+- ✅ Best for development and testing
+- ✅ Resources auto-appear when app starts
+- ✅ Resources auto-disappear when app stops
+- ✅ Clean environment - no leftover resources
+- ⚠️ Requires Azure authentication
 
-Initializing Azure Resource Manager for dynamic resource management...
-√ Azure Resource Manager initialized
-Found 2 enabled relay configuration(s):
-  - your-relay-name --> http://localhost:3978 (Dynamic: True)
-  - another-relay-name --> http://localhost:8500 (Dynamic: True)
+**Static** (`DynamicResourceCreation: false`)
+- ✅ Best for production environments
+- ✅ Persistent, manually managed connections
+- ✅ No Azure management permissions needed
+- ✅ Simpler configuration
 
-Dynamic resource creation enabled for 'your-relay-name'
-Dynamic resource creation enabled for 'another-relay-name'
-Creating Hybrid Connection 'your-relay-name' in namespace 'common-relay'...
-Creating Hybrid Connection 'another-relay-name' in namespace 'common-relay'...
-√ Hybrid Connection 'your-relay-name' created successfully
-√ Hybrid Connection 'another-relay-name' created successfully
-Azure Relay is listening on
-        sb://your-relay-namespace.servicebus.windows.net/your-relay-name
-and routing requests to
-        http://localhost:3978/
-
-
-Press [Enter] to exit
-Azure Relay is listening on
-        sb://your-relay-namespace.servicebus.windows.net/another-relay-name
-and routing requests to
-        http://localhost:8500/
-
-
-Press [Enter] to exit
-```
-
-## Dynamic vs Static Resources
-
-- **Dynamic** (`DynamicResourceCreation: true`): Best for development, testing, and temporary deployments. Resources automatically appear when app starts and disappear when it stops.
-- **Static** (`DynamicResourceCreation: false`): Best for production environments where you want persistent, manually managed hybrid connections.
-
-## Integration with Other Projects
+## 🔗 Integration with Other Projects
 
 This Hybrid Connection Host can work alongside your existing applications:
 
 1. **Start your local service** on the configured target address (e.g., `http://localhost:3978`)
 2. **Start this Hybrid Connection Host** to create the connection in Azure  
-3. **Access via Azure**: Requests to `https://[your-relay-namespace].servicebus.windows.net/your-relay-name` will be proxied to your local service
+3. **Access via Azure**: Requests to `https://[your-relay-namespace].servicebus.windows.net/[your-relay-name]` will be proxied to your local service
 
 **Note**: This project uses Azure Relay Hybrid Connections (modern), which is different from the WCF Relay approach used in the RelayTunnelUsingWCF project. Both serve similar purposes but use different Azure technologies.
 
-## Troubleshooting
+## 🐛 Troubleshooting
+
+### Quick Solutions
+
+**Subscription Mismatch (Most Common)**
+```bash
+az account show  # Check current subscription
+az account set --subscription "your-subscription-id"  # Set correct one
+```
 
 **Authentication Errors**
-- Ensure you're logged into Azure CLI (`az login`) or have valid service principal credentials
-- Verify the authenticated identity has sufficient permissions on the resource group
+- Run `az login` for Azure CLI authentication
+- Verify permissions on resource group
+- Check `SubscriptionId` in appsettings.json
 
-**Subscription Mismatch (Common Issue)**
-- Error: "The Resource 'Microsoft.Relay/namespaces/...' was not found"
-- **Fix**: Ensure your Azure CLI is using the correct subscription:
-  ```bash
-  az account show  # Check current subscription
-  az account set --subscription "your-subscription-id"  # Set correct subscription
-  ```
-- Verify the subscription ID in appsettings.json matches your Azure CLI subscription
+**Configuration Issues**
+- Rename `appsettings-template.json` to `appsettings.json`
+- Validate JSON syntax
+- Ensure relay names are lowercase
 
 **Resource Creation Failures**
-- Check that the `SubscriptionId` and `ResourceGroupName` are correct in appsettings.json
-- Ensure the relay namespace exists in the specified resource group (must be an Azure Relay namespace, not Service Bus)
-- Verify network connectivity to Azure ARM endpoints
+- Verify `SubscriptionId` and `ResourceGroupName` are correct
+- Ensure relay namespace exists (Azure Relay, not Service Bus)
+- Check you have Contributor or Relay Namespace Contributor role
 
-**Configuration Errors**
-- Validate JSON syntax in appsettings.json
-- Ensure all required fields are populated for relays with `DynamicResourceCreation: true`
-- Check that relay names are unique within the namespace
+📚 **For comprehensive troubleshooting, see:** [Troubleshooting Guide](../../docs/TROUBLESHOOTING.md)
 
-See the [ARM Automation README](README_ARM_AUTOMATION.md) for detailed implementation information about the dynamic resource creation feature.
+## 📋 Configuration Properties
+
+### AzureManagement Section (Only required for dynamic resource creation)
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `SubscriptionId` | string | Yes* | Your Azure subscription ID. Required if any relay uses `DynamicResourceCreation: true` |
+| `TenantId` | string | No | Azure tenant ID. Optional when using DefaultAzureCredential |
+| `UseDefaultAzureCredential` | boolean | No | If `true` (default), uses Azure CLI, Managed Identity, or Visual Studio credentials. If `false`, uses ClientId/ClientSecret |
+| `ClientId` | string | No* | Service Principal client ID. Required if `UseDefaultAzureCredential: false` |
+| `ClientSecret` | string | No* | Service Principal client secret. Required if `UseDefaultAzureCredential: false` |
+
+### Relays Section
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `RelayNamespace` | string | Yes | Relay namespace name (e.g., "namespace") - ".servicebus.windows.net" is appended automatically |
+| `RelayName` | string | Yes | Name of the hybrid connection (automatically converted to lowercase) |
+| `PolicyName` | string | Yes | Name of the shared access policy |
+| `PolicyKey` | string | Yes | Key for the shared access policy |
+| `TargetServiceAddress` | string | Yes | Local service URL to proxy requests to (e.g., "http://localhost:3978") |
+| `IsEnabled` | boolean | Yes | Whether this relay configuration is active |
+| `DynamicResourceCreation` | boolean | No | If `true`, automatically creates/deletes the hybrid connection resource. Default: `false` |
+| `ResourceGroupName` | string | Yes* | Azure resource group name. Required if `DynamicResourceCreation: true` |
+| `Description` | string | No | Description for the dynamically created resource. Default: "Dynamically created hybrid connection" |
+| `RequiresClientAuthorization` | boolean | No | Whether clients need authorization to connect. Default: `true` |
+
+## 📚 Additional Resources
+
+### Project Documentation
+- **[Main Project README](../../README.md)** - Overview and project comparison
+- **[WCF Relay Alternative](../RelayTunnelUsingWCF/README.md)** - Legacy .NET Framework option
+- **[ARM Automation Details](README_ARM_AUTOMATION.md)** - Technical implementation deep-dive
+
+### Guides
+- **[Authentication Guide](../../docs/AUTHENTICATION.md)** - Detailed Azure authentication setup for all methods
+- **[Troubleshooting Guide](../../docs/TROUBLESHOOTING.md)** - Comprehensive solutions for common issues
+- **[Technical Comparison](../../docs/COMPARISON.md)** - WCF vs Hybrid Connection comparison
+
+### External Links
+- [Azure Relay Documentation](https://docs.microsoft.com/azure/azure-relay/)
