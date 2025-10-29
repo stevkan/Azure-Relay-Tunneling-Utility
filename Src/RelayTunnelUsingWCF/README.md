@@ -1,6 +1,6 @@
 # RelayTunnelUsingWCF
 
-**Version: 1.4.0**
+**Version: 1.4.1**
 
 This .NET Framework 4.8 console application provides **WCF Relay functionality** where the relay endpoint appears in your Azure Relay namespace when running and disappears when stopped.
 
@@ -188,6 +188,24 @@ This WCF Relay Host is designed to work alongside your existing applications:
 3. **Access via Azure**: Requests to `https://[your-relay-namespace].servicebus.windows.net/[your-relay-name]/api/messages` will be proxied to your local service
 
 **Note**: This project provides WCF Relay functionality, which is different from the Hybrid Connections approach used in the RelayTunnelUsingHybridConnection project. Both serve similar purposes but use different Azure Relay technologies.
+
+## ⚠️ Known Limitations
+
+### WebSocket Connections Not Supported
+
+**WCF Relay does not support WebSocket connections.** This Azure Relay technology is limited to HTTP/REST request-response patterns only.
+
+**Supported:**
+- ✅ HTTP/REST traffic (web pages, REST APIs, static files)
+- ✅ SOAP web services
+- ✅ Request-response messaging patterns
+
+**Not Supported:**
+- ❌ WebSocket connections (e.g., bot Direct Line WebSocket protocol, SignalR, real-time communication)
+- ❌ Persistent bidirectional connections
+- ❌ Streaming protocols requiring WebSocket
+
+**Alternative:** If you need WebSocket support, you must use **[RelayTunnelUsingHybridConnection](../RelayTunnelUsingHybridConnection/README.md)**, which supports both HTTP and WebSocket connections.
 
 ## 🔐 Security Notes
 
