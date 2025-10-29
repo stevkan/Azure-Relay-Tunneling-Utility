@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Directory Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: 0;
+        }
+        body {
+            padding: 80px 100px;
+            font: 13px "Helvetica Neue", "Lucida Grande", "Arial";
+            background: #ECE9E9;
+            color: #555;
+        }
+        h1 {
+            font-size: 60px;
+            color: #343434;
+            margin-bottom: 15px;
+        }
+        #breadcrumb {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        #breadcrumb a {
+            color: #555;
+            text-decoration: none;
+            margin-right: 5px;
+        }
+        #breadcrumb a:hover {
+            color: #303030;
+        }
+        #loading {
+            display: none;
+            font-style: italic;
+            color: #888;
+        }
+        #error {
+            display: none;
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        #files {
+            list-style: none;
+            width: 100%;
+        }
+        #files li {
+            float: left;
+            width: 30%;
+            line-height: 25px;
+            margin: 1px;
+        }
+        #files li a {
+            display: block;
+            height: 25px;
+            border: 1px solid transparent;
+            border-radius: 5px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-decoration: none;
+            color: #555;
+            cursor: pointer;
+        }
+        #files li a:hover {
+            background: rgba(255,255,255,0.65);
+            border: 1px solid #ececec;
+            color: #303030;
+        }
+        #files .directory:before {
+            content: "📁 ";
+        }
+        #files .file:before {
+            content: "📄 ";
+        }
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+    <h1>Directory Browser</h1>
+    <div id="breadcrumb"></div>
+    <div id="loading">Loading...</div>
+    <div id="error"></div>
+    <ul id="files" class="clearfix"></ul>
+
+    <script>
+        class DirectoryBrowser {
+            constructor() {
+                this.currentPath = '';
+                this.baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, '');
+                this.isNavigating = false;
+                this.init();
+            }
+
+            init() {
+                // Load initial directory
+                this.loadDirectory('');
+                
+                // Handle browser back/forward buttons
+                window.addEventListener('popstate', (e) => {
+                    if (this.isNavigating) {
+                        return;
+                    }
+                    const path = e.state ? e.state.path : '';
+                    this.loadDirectory(path, false);
+                });
+            }
+
+            async loadDirectory(path, addToHistory = true) {
+                if (addToHistory) {
+                    this.isNavigating = true;
+                }
+                
+                this.showLoading(true);
+                this.hideError();
+
+                try {
+                    const apiUrl = `${this.baseUrl}/api/list?path=${encodeURIComponent(path)}`;
+                    const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    this.currentPath = path;
+                    
+                    this.updateBreadcrumb(path);
+                    this.updateFileList(data.items || []);
+                    
+                    if (addToHistory) {
+                        const url = path ? `${window.location.pathname}#${path}` : window.location.pathname;
+                        history.pushState({ path }, '', url);
+                    }
+
+                } catch (error) {
+                    this.showError(`Failed to load directory: ${error.message}`);
+                } finally {
+                    this.showLoading(false);
+                    if (addToHistory) {
+                        // Small delay to let history state settle
+                        setTimeout(() => {
+                            this.isNavigating = false;
+                        }, 100);
+                    }
+                }
+            }
+
+            updateBreadcrumb(path) {
+                const breadcrumb = document.getElementById('breadcrumb');
+                const parts = path ? path.split('/').filter(p => p) : [];
+                
+                let html = '<a href="#" onclick="browser.loadDirectory(\'\')">~</a>';
+                let currentPath = '';
+                
+                for (const part of parts) {
+                    currentPath += (currentPath ? '/' : '') + part;
+                    html += ` / <a href="#" onclick="browser.loadDirectory('${currentPath}')">${part}</a>`;
+                }
+                
+                breadcrumb.innerHTML = html + ' /';
+            }
+
+            updateFileList(items) {
+                const filesList = document.getElementById('files');
+                filesList.innerHTML = '';
+
+                // Add parent directory link if not at root
+                if (this.currentPath) {
+                    const parentPath = this.currentPath.split('/').slice(0, -1).join('/');
+                    const li = document.createElement('li');
+                    li.innerHTML = `<a href="#" class="directory" onclick="browser.loadDirectory('${parentPath}')">.. (parent directory)</a>`;
+                    filesList.appendChild(li);
+                }
+
+                // Add directories first
+                const directories = items.filter(item => item.type === 'directory');
+                const files = items.filter(item => item.type === 'file');
+
+                [...directories, ...files].forEach(item => {
+                    const li = document.createElement('li');
+                    const className = item.type === 'directory' ? 'directory' : 'file';
+                    const newPath = this.currentPath ? `${this.currentPath}/${item.name}` : item.name;
+                    
+                    if (item.type === 'directory') {
+                        li.innerHTML = `<a href="#" class="${className}" onclick="browser.loadDirectory('${newPath}')">${item.name}</a>`;
+                    } else {
+                        // For HTML files, serve them in their original context for relative links to work
+                        // For other files, use the download endpoint
+                        const isHtmlFile = item.name.toLowerCase().endsWith('.html') || item.name.toLowerCase().endsWith('.htm');
+                        
+                        if (isHtmlFile) {
+                            // Serve HTML files at their original path for proper relative resource loading
+                            const htmlUrl = `${this.baseUrl}/${newPath}`;
+                            li.innerHTML = `<a href="${htmlUrl}" class="${className}">${item.name}</a>`;
+                        } else {
+                            // For non-HTML files, use the download endpoint  
+                            const fileUrl = `${this.baseUrl}/file?path=${encodeURIComponent(newPath)}`;
+                            li.innerHTML = `<a href="${fileUrl}" class="${className}" target="_blank">${item.name}</a>`;
+                        }
+                    }
+                    
+                    filesList.appendChild(li);
+                });
+            }
+
+            showLoading(show) {
+                document.getElementById('loading').style.display = show ? 'block' : 'none';
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+
+            hideError() {
+                document.getElementById('error').style.display = 'none';
+            }
+        }
+
+        // Initialize the browser
+        const browser = new DirectoryBrowser();
+
+        // Handle initial hash navigation
+        if (window.location.hash) {
+            const path = window.location.hash.substring(1);
+            browser.loadDirectory(path, false);
+        }
+    </script>
+</body>
+</html>
