@@ -291,3 +291,6 @@ __pycache__/
 **/appsettings.json
 /releases
 Src/RelayTunnelUsingHybridConnection/Azure Relay Tunnel Utility.aip
+
+# Personal build documentation
+BUILD.md

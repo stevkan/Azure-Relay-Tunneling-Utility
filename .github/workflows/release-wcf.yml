@@ -1,0 +1,98 @@
+name: Release - WCF Relay
+
+on:
+  push:
+    tags:
+      - 'wcf-v*'  # Triggers on tags like wcf-v1.3.0, wcf-v1.4.0, etc.
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for release notes
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+      
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+      
+      - name: Restore NuGet packages
+        run: nuget restore Src/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj -PackagesDirectory Src/packages
+      
+      - name: Build project
+        run: msbuild Src/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj /p:Configuration=Release /p:OutputPath=..\..\publish-wcf
+      
+      - name: Install Gitleaks (Secret Scanner)
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_windows_x64.zip" -OutFile gitleaks.zip
+          Expand-Archive -Path gitleaks.zip -DestinationPath ./gitleaks
+          
+      - name: Scan for secrets in build output
+        run: |
+          ./gitleaks/gitleaks.exe detect --source ./publish-wcf --verbose --no-git
+        continue-on-error: false  # Fail the build if secrets are found
+      
+      - name: Get version from tag
+        id: get_version
+        run: |
+          $version = "${{ github.ref_name }}"
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+      
+      - name: Create ZIP archive
+        run: |
+          $version = "${{ steps.get_version.outputs.VERSION }}"
+          Compress-Archive -Path ./publish-wcf/* -DestinationPath "AzureRelayTunnelingUtility-WCF-$version.zip"
+        shell: pwsh
+      
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          $version = "${{ steps.get_version.outputs.VERSION }}"
+          $notes = @"
+          ## Azure Relay Tunneling Utility - WCF Relay $version
+          
+          **Technology:** WCF Relay (.NET Framework 4.8) - Legacy implementation
+          
+          ⚠️ **Security Warning:** This version uses deprecated Azure libraries with no ongoing security updates. Use Hybrid Connection version for production.
+          
+          ### 📦 Installation
+          
+          **Option 1: Binary (Automated Build)**
+          - Download ``AzureRelayTunnelingUtility-WCF-$version.zip``
+          - Extract and run the executable
+          - Rename ``appsettings-template.json`` to ``appsettings.json`` and configure
+          
+          **Option 2: Installer (Manual Upload)**
+          - Download the installer ``.exe`` file (uploaded separately)
+          - Run the installer
+          - Configure ``appsettings.json`` in the installation directory
+          
+          ### 📝 What's Changed
+          See commit history below for detailed changes.
+          
+          ---
+          **📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingWCF)**
+          "@
+          
+          # Escape for GitHub Actions
+          $notes = $notes -replace "`r`n","%0A" -replace "`n","%0A"
+          echo "NOTES=$notes" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: AzureRelayTunnelingUtility-WCF-${{ steps.get_version.outputs.VERSION }}.zip
+          body: ${{ steps.release_notes.outputs.NOTES }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          name: "WCF Relay ${{ steps.get_version.outputs.VERSION }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

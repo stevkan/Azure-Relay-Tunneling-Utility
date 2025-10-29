@@ -1,0 +1,98 @@
+name: Release - Hybrid Connection
+
+on:
+  push:
+    tags:
+      - 'hybrid-v*'  # Triggers on tags like hybrid-v1.5.2, hybrid-v2.0.0, etc.
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for release notes
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore dependencies
+        run: dotnet restore Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj
+      
+      - name: Build project
+        run: dotnet build Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --no-restore
+      
+      - name: Publish project
+        run: dotnet publish Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --output ./publish --no-build
+      
+      - name: Install Gitleaks (Secret Scanner)
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_windows_x64.zip" -OutFile gitleaks.zip
+          Expand-Archive -Path gitleaks.zip -DestinationPath ./gitleaks
+          
+      - name: Scan for secrets in build output
+        run: |
+          ./gitleaks/gitleaks.exe detect --source ./publish --verbose --no-git
+        continue-on-error: false  # Fail the build if secrets are found
+      
+      - name: Get version from tag
+        id: get_version
+        run: |
+          $version = "${{ github.ref_name }}"
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+      
+      - name: Create ZIP archive
+        run: |
+          $version = "${{ steps.get_version.outputs.VERSION }}"
+          Compress-Archive -Path ./publish/* -DestinationPath "AzureRelayTunnelingUtility-HybridConnection-$version.zip"
+        shell: pwsh
+      
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          $version = "${{ steps.get_version.outputs.VERSION }}"
+          $notes = @"
+          ## Azure Relay Tunneling Utility - Hybrid Connection $version
+          
+          **Technology:** Azure Relay Hybrid Connections (.NET 8) - Modern, recommended implementation
+          
+          ### 📦 Installation
+          
+          **Option 1: Binary (Automated Build)**
+          - Download ``AzureRelayTunnelingUtility-HybridConnection-$version.zip``
+          - Extract and run the executable
+          - Rename ``appsettings-template.json`` to ``appsettings.json`` and configure
+          
+          **Option 2: Installer (Manual Upload)**
+          - Download the installer ``.exe`` file (uploaded separately)
+          - Run the installer
+          - Configure ``appsettings.json`` in the installation directory
+          
+          ### 📝 What's Changed
+          See commit history below for detailed changes.
+          
+          ---
+          **📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingHybridConnection)**
+          "@
+          
+          # Escape for GitHub Actions
+          $notes = $notes -replace "`r`n","%0A" -replace "`n","%0A"
+          echo "NOTES=$notes" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: AzureRelayTunnelingUtility-HybridConnection-${{ steps.get_version.outputs.VERSION }}.zip
+          body: ${{ steps.release_notes.outputs.NOTES }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          name: "Hybrid Connection ${{ steps.get_version.outputs.VERSION }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
