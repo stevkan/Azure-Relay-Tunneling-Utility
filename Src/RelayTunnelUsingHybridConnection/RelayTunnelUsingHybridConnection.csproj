@@ -5,19 +5,34 @@
     <TargetFramework>net8.0</TargetFramework>
     <ApplicationIcon>App.ico</ApplicationIcon>
     <RootNamespace>RelayTunnelUsingHybridConnection</RootNamespace>
-    <Version>1.5.1</Version>
-    <AssemblyVersion>1.5.1.0</AssemblyVersion>
-    <FileVersion>1.5.1.0</FileVersion>
+    <Version>1.5.2</Version>
+    <AssemblyVersion>1.5.2.0</AssemblyVersion>
+    <FileVersion>1.5.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="App.ico" />
-    <None Remove="appsettings.json" />
+    <None Remove="appsettings-template.json" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- Debug: Copy both appsettings.json and appsettings-template.json -->
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <Content Include="App.ico" />
     <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettings-template.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\directory-browser.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Release: Copy only appsettings-template.json -->
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <Content Include="App.ico" />
+    <Content Include="appsettings-template.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="wwwroot\directory-browser.html">
