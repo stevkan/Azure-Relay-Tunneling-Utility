@@ -1,6 +1,6 @@
 # RelayTunnelUsingHybridConnection
 
-**Version: 1.4.0**
+**Version: 1.4.1**
 
 This .NET 8 console application provides **Azure Hybrid Connection** functionality with optional **dynamic resource management** using ARM templates. Hybrid connections can be created/deleted automatically when the application starts/stops.
 
@@ -208,6 +208,22 @@ This Hybrid Connection Host can work alongside your existing applications:
 3. **Access via Azure**: Requests to `https://[your-relay-namespace].servicebus.windows.net/[your-relay-name]` will be proxied to your local service
 
 **Note**: This project uses Azure Relay Hybrid Connections (modern), which is different from the WCF Relay approach used in the RelayTunnelUsingWCF project. Both serve similar purposes but use different Azure technologies.
+
+## ⚠️ Known Limitations
+
+### Simultaneous HTTP and WebSocket Tunneling
+
+Using a single hybrid connection for both HTTP proxying (e.g., serving web pages from a local web server) and WebSocket tunneling simultaneously is **not supported in all scenarios**. The success of this configuration depends on your specific use case:
+
+**Supported Scenarios:**
+- HTTP-only traffic (web pages, REST APIs, static files)
+- WebSocket-only traffic (bot Direct Line connections, real-time communication)
+- Sequential use (switching between HTTP and WebSocket at different times)
+
+**Unsupported Scenarios:**
+- A single relay simultaneously handling both HTTP requests for a web application AND HTTP/WebSocket connections for the same or different service
+
+**Recommendation:** If you need both HTTP and WebSocket support, create separate hybrid connections (i.e., separate relay namespaces) with distinct relay names — one configured for HTTP traffic and another for WebSocket traffic.
 
 ## 🐛 Troubleshooting
 

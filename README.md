@@ -1,6 +1,6 @@
 # Azure Relay Tunneling Utility
 
-**Version: 1.4.0**
+**Version: 1.4.1**
 
 An HTTP tunneling utility based on Azure Relay. Forward HTTP traffic from Azure to your local machine for debugging and development.
 
@@ -21,6 +21,10 @@ This repository contains two implementations using different Azure Relay technol
 **Technology:** Azure Relay Hybrid Connections (.NET 8)  
 **Best For:** Modern development, production use, dynamic resource management
 
+**Protocol Support:**
+- ✅ HTTP/REST (request/response patterns)
+- ✅ WebSocket connections
+
 **Key Features:**
 - ✅ Modern .NET 8 implementation
 - ✅ Dynamic resource creation - hybrid connections appear/disappear automatically
@@ -35,6 +39,10 @@ This repository contains two implementations using different Azure Relay technol
 ### [RelayTunnelUsingWCF](Src/RelayTunnelUsingWCF/README.md)
 **Technology:** WCF Relay (.NET Framework 4.8)  
 **Best For:** Legacy systems, existing WCF infrastructure
+
+**Protocol Support:**
+- ✅ HTTP/REST (request/response patterns)
+- ❌ WebSocket connections **NOT supported**
 
 **Key Features:**
 - ✅ WCF Relay endpoints
@@ -60,6 +68,8 @@ This repository contains two implementations using different Azure Relay technol
 | Feature | Hybrid Connection | WCF Relay |
 |---------|------------------|-----------|
 | **.NET Version** | .NET 8 | .NET Framework 4.8 |
+| **HTTP/REST Support** | ✅ Yes | ✅ Yes |
+| **WebSocket Support** | ✅ Yes | ❌ No |
 | **Production Ready** | ✅ Yes | ⚠️ **No - Security Risk** |
 | **Security Updates** | ✅ Active support | ❌ Deprecated libraries |
 | **Authentication** | Azure CLI, Service Principal, Managed Identity | SAS key only |
