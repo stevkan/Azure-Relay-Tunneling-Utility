@@ -1,6 +1,6 @@
 # Azure Relay Tunneling Utility
 
-**Version: 1.4.1**
+**Version: 1.5.0**
 
 An HTTP tunneling utility based on Azure Relay. Forward HTTP traffic from Azure to your local machine for debugging and development.
 
