@@ -104,6 +104,49 @@ namespace RelayTunnelUsingWCF
             {
                 throw new InvalidOperationException("No relay configurations found in appsettings.json");
             }
+
+            // Check if configuration appears to be unconfigured (template values)
+            CheckForUnconfiguredSettings();
+        }
+
+        private static void CheckForUnconfiguredSettings()
+        {
+            var unconfiguredRelays = new List<string>();
+
+            foreach (var relay in _appSettings.Relays.Where(r => r.IsEnabled))
+            {
+                var missingFields = new List<string>();
+
+                if (string.IsNullOrWhiteSpace(relay.RelayNamespace))
+                    missingFields.Add("RelayNamespace");
+                if (string.IsNullOrWhiteSpace(relay.RelayName))
+                    missingFields.Add("RelayName");
+                if (string.IsNullOrWhiteSpace(relay.PolicyName))
+                    missingFields.Add("PolicyName");
+                if (string.IsNullOrWhiteSpace(relay.PolicyKey))
+                    missingFields.Add("PolicyKey");
+
+                if (missingFields.Count > 0)
+                {
+                    unconfiguredRelays.Add($"Relay '{relay.RelayName ?? "unnamed"}' is missing: {string.Join(", ", missingFields)}");
+                }
+            }
+
+            if (unconfiguredRelays.Count > 0)
+            {
+                Console.WriteLine("❌ Configuration Error: appsettings.json has not been properly configured.");
+                Console.WriteLine();
+                Console.WriteLine("Missing required configuration values:");
+                foreach (var error in unconfiguredRelays)
+                {
+                    Console.WriteLine($"  • {error}");
+                }
+                Console.WriteLine();
+                Console.WriteLine("Please update appsettings.json with your Azure Relay settings.");
+                Console.WriteLine("Refer to appsettings-template.json for the required fields.");
+                Console.WriteLine();
+                throw new InvalidOperationException("Configuration validation failed. Please configure appsettings.json before running.");
+            }
         }
 
         private static void StartRelay(RelayConfiguration config)

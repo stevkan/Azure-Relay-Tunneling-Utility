@@ -1,6 +1,6 @@
 # RelayTunnelUsingHybridConnection
 
-**Version: 1.5.2**
+**Version: 1.5.3**
 
 This .NET 8 console application provides **Azure Hybrid Connection** functionality with optional **dynamic resource management** using ARM templates. Hybrid connections can be created/deleted automatically when the application starts/stops.
 

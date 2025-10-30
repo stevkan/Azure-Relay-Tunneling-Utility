@@ -63,7 +63,15 @@ namespace RelayTunnelUsingHybridConnection
 
                 if (relayConfigs.Count == 0)
                 {
-                    Console.WriteLine("No relay configurations found in appsettings.json.");
+                    Console.WriteLine("❌ No relay configurations found in appsettings.json.");
+                    Console.WriteLine("Please add relay configurations to the 'Relays' section.");
+                    Console.WriteLine("Refer to appsettings-template.json for the required structure.");
+                    return;
+                }
+
+                // Validate configuration before proceeding
+                if (!ValidateConfiguration(relayConfigs, azureManagementConfig, hasDynamicRelays))
+                {
                     return;
                 }
 
@@ -186,6 +194,82 @@ namespace RelayTunnelUsingHybridConnection
                 Console.WriteLine("Press any key to exit...");
                 Console.ReadKey();
             }
+        }
+
+        private static bool ValidateConfiguration(List<RelayConfig> relayConfigs, AzureManagementConfig azureConfig, bool hasDynamicRelays)
+        {
+            var errors = new List<string>();
+            var enabledRelays = relayConfigs.Where(r => r.IsEnabled).ToList();
+
+            if (enabledRelays.Count == 0)
+            {
+                return true;
+            }
+
+            foreach (var relay in enabledRelays)
+            {
+                var missingFields = new List<string>();
+
+                if (string.IsNullOrWhiteSpace(relay.RelayNamespace))
+                    missingFields.Add("RelayNamespace");
+                if (string.IsNullOrWhiteSpace(relay.RelayName))
+                    missingFields.Add("RelayName");
+                if (string.IsNullOrWhiteSpace(relay.PolicyName))
+                    missingFields.Add("PolicyName");
+                if (string.IsNullOrWhiteSpace(relay.PolicyKey))
+                    missingFields.Add("PolicyKey");
+                if (string.IsNullOrWhiteSpace(relay.TargetServiceAddress))
+                    missingFields.Add("TargetServiceAddress");
+
+                if (relay.DynamicResourceCreation && string.IsNullOrWhiteSpace(relay.ResourceGroupName))
+                    missingFields.Add("ResourceGroupName (required when DynamicResourceCreation is true)");
+
+                if (missingFields.Count > 0)
+                {
+                    errors.Add($"Relay '{relay.RelayName ?? "unnamed"}' is missing: {string.Join(", ", missingFields)}");
+                }
+            }
+
+            if (hasDynamicRelays)
+            {
+                var azureMissingFields = new List<string>();
+
+                if (string.IsNullOrWhiteSpace(azureConfig.SubscriptionId))
+                    azureMissingFields.Add("SubscriptionId");
+                if (string.IsNullOrWhiteSpace(azureConfig.TenantId))
+                    azureMissingFields.Add("TenantId");
+
+                if (!azureConfig.UseDefaultAzureCredential)
+                {
+                    if (string.IsNullOrWhiteSpace(azureConfig.ClientId))
+                        azureMissingFields.Add("ClientId (required when UseDefaultAzureCredential is false)");
+                    if (string.IsNullOrWhiteSpace(azureConfig.ClientSecret))
+                        azureMissingFields.Add("ClientSecret (required when UseDefaultAzureCredential is false)");
+                }
+
+                if (azureMissingFields.Count > 0)
+                {
+                    errors.Add($"AzureManagement section is missing: {string.Join(", ", azureMissingFields)}");
+                }
+            }
+
+            if (errors.Count > 0)
+            {
+                Console.WriteLine("❌ Configuration Error: appsettings.json has not been properly configured.");
+                Console.WriteLine();
+                Console.WriteLine("Missing required configuration values:");
+                foreach (var error in errors)
+                {
+                    Console.WriteLine($"  • {error}");
+                }
+                Console.WriteLine();
+                Console.WriteLine("Please update appsettings.json with your Azure Relay settings.");
+                Console.WriteLine("Refer to appsettings-template.json for the required fields.");
+                Console.WriteLine();
+                return false;
+            }
+
+            return true;
         }
     }
 }

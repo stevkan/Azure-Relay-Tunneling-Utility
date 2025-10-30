@@ -1,6 +1,6 @@
 # RelayTunnelUsingWCF
 
-**Version: 1.5.2**
+**Version: 1.5.3**
 
 This .NET Framework 4.8 console application provides **WCF Relay functionality** where the relay endpoint appears in your Azure Relay namespace when running and disappears when stopped.
 
