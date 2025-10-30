@@ -16,6 +16,7 @@ title: Downloads
 
 ### Downloads
 
+- **[Windows Exe (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/AzureRelayTunnelingUtility-HC-v1.6.1-Win-x64.exe)**
 - **[Windows (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/AzureRelayTunnelingUtility-HC-v1.6.1-Win-x64.zip)**
 - **[Linux (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/AzureRelayTunnelingUtility-HC-v1.6.1-Linux-x64.zip)**
 - **[macOS (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/AzureRelayTunnelingUtility-HC-v1.6.1-macOS-x64.zip)**
@@ -40,6 +41,7 @@ title: Downloads
 
 ### Downloads
 
+- **[Windows Exe (x86)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/wcf-v1.5.5/AzureRelayTunnelingUtility-WCF-v1.5.5-Win-x86.exe)**
 - **[Windows (x86)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/wcf-v1.5.5/AzureRelayTunnelingUtility-WCF-v1.5.5-Win-x86.zip)**
 
 ### Quick Start
