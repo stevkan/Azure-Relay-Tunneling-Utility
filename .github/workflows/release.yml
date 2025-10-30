@@ -45,57 +45,41 @@ jobs:
       - name: Get version from tag
         id: get_version
         run: |
-          $version = "${{ github.ref_name }}"
+          $tag = "${{ github.ref_name }}"
+          $version = $tag -replace '^hybrid-v', 'v'
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          echo "TAG=$tag" >> $env:GITHUB_OUTPUT
         shell: pwsh
       
       - name: Create ZIP archive
         run: |
-          $version = "${{ steps.get_version.outputs.VERSION }}"
-          Compress-Archive -Path ./publish/* -DestinationPath "AzureRelayTunnelingUtility-HybridConnection-$version.zip"
+          $tag = "${{ steps.get_version.outputs.TAG }}"
+          Compress-Archive -Path ./publish/* -DestinationPath "AzureRelayTunnelingUtility-HybridConnection-$tag.zip"
         shell: pwsh
       
       - name: Generate release notes
         id: release_notes
         run: |
           $version = "${{ steps.get_version.outputs.VERSION }}"
-          $notes = @"
-          ## Azure Relay Tunneling Utility - Hybrid Connection $version
+          $tag = "${{ steps.get_version.outputs.TAG }}"
           
-          **Technology:** Azure Relay Hybrid Connections (.NET 8) - Modern, recommended implementation
+          $notes = "**Azure Relay Hybrid Connections (.NET 8)**`n`n"
+          $notes += "Download the zip below, extract, rename ``appsettings-template.json`` to ``appsettings.json``, and configure.`n`n"
+          $notes += "📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingHybridConnection)"
           
-          ### 📦 Installation
-          
-          **Option 1: Binary (Automated Build)**
-          - Download ``AzureRelayTunnelingUtility-HybridConnection-$version.zip``
-          - Extract and run the executable
-          - Rename ``appsettings-template.json`` to ``appsettings.json`` and configure
-          
-          **Option 2: Installer (Manual Upload)**
-          - Download the installer ``.exe`` file (uploaded separately)
-          - Run the installer
-          - Configure ``appsettings.json`` in the installation directory
-          
-          ### 📝 What's Changed
-          See commit history below for detailed changes.
-          
-          ---
-          **📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingHybridConnection)**
-          "@
-          
-          # Escape for GitHub Actions
-          $notes = $notes -replace "`r`n","%0A" -replace "`n","%0A"
-          echo "NOTES=$notes" >> $env:GITHUB_OUTPUT
+          echo "NOTES<<EOF" >> $env:GITHUB_OUTPUT
+          echo $notes >> $env:GITHUB_OUTPUT
+          echo "EOF" >> $env:GITHUB_OUTPUT
         shell: pwsh
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: AzureRelayTunnelingUtility-HybridConnection-${{ steps.get_version.outputs.VERSION }}.zip
+          files: AzureRelayTunnelingUtility-HybridConnection-${{ steps.get_version.outputs.TAG }}.zip
           body: ${{ steps.release_notes.outputs.NOTES }}
           draft: false
           prerelease: false
           generate_release_notes: true
-          name: "Hybrid Connection ${{ steps.get_version.outputs.VERSION }}"
+          name: "Relay Tunnel Using Hybrid Connection ${{ steps.get_version.outputs.VERSION }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
