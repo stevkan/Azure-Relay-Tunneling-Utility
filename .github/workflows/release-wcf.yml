@@ -51,8 +51,8 @@ jobs:
       
       - name: Create ZIP archive
         run: |
-          $tag = "${{ steps.get_version.outputs.TAG }}"
-          Compress-Archive -Path ./publish-wcf/* -DestinationPath "AzureRelayTunnelingUtility-WCF-$tag.zip"
+          $version = "${{ steps.get_version.outputs.VERSION }}"
+          Compress-Archive -Path ./publish-wcf/* -DestinationPath "AzureRelayTunnelingUtility-WCF-$version.zip"
         shell: pwsh
       
       - name: Generate release notes
@@ -74,7 +74,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: AzureRelayTunnelingUtility-WCF-${{ steps.get_version.outputs.TAG }}.zip
+          files: AzureRelayTunnelingUtility-WCF-${{ steps.get_version.outputs.VERSION }}.zip
           body: ${{ steps.release_notes.outputs.NOTES }}
           draft: false
           prerelease: false
