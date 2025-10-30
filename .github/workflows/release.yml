@@ -5,6 +5,9 @@ on:
     tags:
       - 'hybrid-v*'  # Triggers on tags like hybrid-v1.5.2, hybrid-v2.0.0, etc.
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     runs-on: windows-latest
