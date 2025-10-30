@@ -5,6 +5,9 @@ on:
     tags:
       - 'wcf-v*'  # Triggers on tags like wcf-v1.3.0, wcf-v1.4.0, etc.
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     runs-on: windows-latest
