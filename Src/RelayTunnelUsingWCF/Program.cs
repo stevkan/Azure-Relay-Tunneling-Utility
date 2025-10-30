@@ -94,7 +94,14 @@ namespace RelayTunnelUsingWCF
             
             if (!File.Exists(configPath))
             {
-                throw new FileNotFoundException("appsettings.json file not found. Please create it in the application directory.");
+                Console.WriteLine("❌ Configuration Error: appsettings.json was not found.");
+                Console.WriteLine();
+                Console.WriteLine($"Expected location: {configPath}");
+                Console.WriteLine();
+                Console.WriteLine("Please create appsettings.json with your Azure Relay settings.");
+                Console.WriteLine("Refer to appsettings-template.json for the required structure.");
+                Console.WriteLine();
+                throw new FileNotFoundException("appsettings.json file not found.");
             }
 
             var jsonContent = File.ReadAllText(configPath);
