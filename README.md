@@ -1,6 +1,6 @@
 # Azure Relay Tunneling Utility
 
-**Versions:** Hybrid Connection v1.5.3 | WCF Relay v1.5.3
+**Versions:** Hybrid Connection v1.6.0 | WCF Relay v1.5.4
 
 An HTTP tunneling utility based on Azure Relay. Forward HTTP traffic from Azure to your local machine for debugging and development.
 
@@ -19,7 +19,8 @@ This repository contains two implementations using different Azure Relay technol
 
 ### [RelayTunnelUsingHybridConnection](Src/RelayTunnelUsingHybridConnection/README.md) ✅ **Recommended**
 **Technology:** Azure Relay Hybrid Connections (.NET 8)  
-**Best For:** Modern development, production use, dynamic resource management
+**Best For:** Modern development, production use, dynamic resource management  
+**Platform:** Cross-platform (Windows, Linux, macOS)
 
 **Protocol Support:**
 - ✅ HTTP/REST (request/response patterns)
@@ -27,6 +28,7 @@ This repository contains two implementations using different Azure Relay technol
 
 **Key Features:**
 - ✅ Modern .NET 8 implementation
+- ✅ Cross-platform support (Windows, Linux, macOS)
 - ✅ Dynamic resource creation - hybrid connections appear/disappear automatically
 - ✅ Multiple authentication options (Azure CLI, Service Principal, Managed Identity)
 - ✅ Multi-relay support in single application
@@ -38,7 +40,8 @@ This repository contains two implementations using different Azure Relay technol
 
 ### [RelayTunnelUsingWCF](Src/RelayTunnelUsingWCF/README.md)
 **Technology:** WCF Relay (.NET Framework 4.8)  
-**Best For:** Legacy systems, existing WCF infrastructure
+**Best For:** Legacy systems, existing WCF infrastructure  
+**Platform:** Windows only
 
 **Protocol Support:**
 - ✅ HTTP/REST (request/response patterns)
@@ -68,6 +71,7 @@ This repository contains two implementations using different Azure Relay technol
 | Feature | Hybrid Connection | WCF Relay |
 |---------|------------------|-----------|
 | **.NET Version** | .NET 8 | .NET Framework 4.8 |
+| **Platform Support** | Windows, Linux, macOS | Windows only |
 | **HTTP/REST Support** | ✅ Yes | ✅ Yes |
 | **WebSocket Support** | ✅ Yes | ❌ No |
 | **Production Ready** | ✅ Yes | ⚠️ **No - Security Risk** |
