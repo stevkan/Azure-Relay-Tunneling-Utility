@@ -1,0 +1,46 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build RelayTunnelUsingHybridConnection",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "--configuration",
+        "Release",
+        "${workspaceFolder}/Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build RelayTunnelUsingWCF",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "--configuration",
+        "Release",
+        "${workspaceFolder}/Src/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build all projects",
+      "dependsOn": [
+        "build RelayTunnelUsingHybridConnection",
+        "build RelayTunnelUsingWCF"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
