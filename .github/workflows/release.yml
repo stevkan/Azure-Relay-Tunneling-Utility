@@ -9,8 +9,21 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
-    runs-on: windows-latest
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: Win-x64
+            rid: win-x64
+          - os: ubuntu-latest
+            platform: Linux-x64
+            rid: linux-x64
+          - os: macos-latest
+            platform: macOS-x64
+            rid: osx-x64
+    
+    runs-on: ${{ matrix.os }}
     
     steps:
       - name: Checkout code
@@ -30,52 +43,115 @@ jobs:
         run: dotnet build Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --no-restore
       
       - name: Publish project
-        run: dotnet publish Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --output ./publish --no-build
+        run: dotnet publish Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained false --output ./publish
       
-      - name: Install Gitleaks (Secret Scanner)
+      - name: Install Gitleaks (Secret Scanner) - Windows
+        if: matrix.os == 'windows-latest'
         run: |
           Invoke-WebRequest -Uri "https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_windows_x64.zip" -OutFile gitleaks.zip
           Expand-Archive -Path gitleaks.zip -DestinationPath ./gitleaks
-          
-      - name: Scan for secrets in build output
+      
+      - name: Install Gitleaks (Secret Scanner) - Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz
+          tar -xzf gitleaks_8.18.0_linux_x64.tar.gz
+          chmod +x gitleaks
+      
+      - name: Install Gitleaks (Secret Scanner) - macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_darwin_x64.tar.gz
+          tar -xzf gitleaks_8.18.0_darwin_x64.tar.gz
+          chmod +x gitleaks
+      
+      - name: Scan for secrets in build output - Windows
+        if: matrix.os == 'windows-latest'
         run: |
           ./gitleaks/gitleaks.exe detect --source ./publish --verbose --no-git
-        continue-on-error: false  # Fail the build if secrets are found
+        continue-on-error: false
+      
+      - name: Scan for secrets in build output - Linux/macOS
+        if: matrix.os != 'windows-latest'
+        run: |
+          ./gitleaks detect --source ./publish --verbose --no-git
+        continue-on-error: false
       
       - name: Get version from tag
         id: get_version
         run: |
-          $tag = "${{ github.ref_name }}"
-          $version = $tag -replace '^hybrid-v', 'v'
-          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
-          echo "TAG=$tag" >> $env:GITHUB_OUTPUT
-        shell: pwsh
+          tag="${{ github.ref_name }}"
+          version="${tag#hybrid-v}"
+          echo "VERSION=v$version" >> $GITHUB_OUTPUT
+          echo "TAG=$tag" >> $GITHUB_OUTPUT
+        shell: bash
       
-      - name: Create ZIP archive
+      - name: Create ZIP archive - Windows
+        if: matrix.os == 'windows-latest'
         run: |
           $version = "${{ steps.get_version.outputs.VERSION }}"
-          Compress-Archive -Path ./publish/* -DestinationPath "AzureRelayTunnelingUtility-HC-$version.zip"
+          Compress-Archive -Path ./publish/* -DestinationPath "AzureRelayTunnelingUtility-HC-$version-${{ matrix.platform }}.zip"
         shell: pwsh
+      
+      - name: Create ZIP archive - Linux/macOS
+        if: matrix.os != 'windows-latest'
+        run: |
+          version="${{ steps.get_version.outputs.VERSION }}"
+          cd publish && zip -r "../AzureRelayTunnelingUtility-HC-$version-${{ matrix.platform }}.zip" *
+        shell: bash
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.platform }}
+          path: AzureRelayTunnelingUtility-HC-${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip
+  
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get version from tag
+        id: get_version
+        run: |
+          tag="${{ github.ref_name }}"
+          version="${tag#hybrid-v}"
+          echo "VERSION=v$version" >> $GITHUB_OUTPUT
+          echo "TAG=$tag" >> $GITHUB_OUTPUT
+        shell: bash
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
       
       - name: Generate release notes
         id: release_notes
         run: |
-          $version = "${{ steps.get_version.outputs.VERSION }}"
-          $tag = "${{ steps.get_version.outputs.TAG }}"
+          version="${{ steps.get_version.outputs.VERSION }}"
           
-          $notes = "**Azure Relay Hybrid Connections (.NET 8)**`n`n"
-          $notes += "Download the zip below, extract, rename ``appsettings-template.json`` to ``appsettings.json``, and configure.`n`n"
-          $notes += "📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingHybridConnection)"
+          notes="**Azure Relay Hybrid Connections (.NET 8)**\n\n"
+          notes+="**Multi-Platform Support:**\n"
+          notes+="- Windows (x64)\n"
+          notes+="- Linux (x64)\n"
+          notes+="- macOS (x64)\n\n"
+          notes+="Download the appropriate zip for your platform below, extract, rename \`appsettings-template.json\` to \`appsettings.json\`, and configure.\n\n"
+          notes+="📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingHybridConnection)"
           
-          echo "NOTES<<EOF" >> $env:GITHUB_OUTPUT
-          echo $notes >> $env:GITHUB_OUTPUT
-          echo "EOF" >> $env:GITHUB_OUTPUT
-        shell: pwsh
+          echo "NOTES<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$notes" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        shell: bash
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: AzureRelayTunnelingUtility-HC-${{ steps.get_version.outputs.VERSION }}.zip
+          files: artifacts/release-*/*.zip
           body: ${{ steps.release_notes.outputs.NOTES }}
           draft: false
           prerelease: false

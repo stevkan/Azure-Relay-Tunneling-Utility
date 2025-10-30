@@ -1,6 +1,6 @@
 # RelayTunnelUsingHybridConnection
 
-**Version: 1.5.3**
+**Version: 1.6.0**
 
 This .NET 8 console application provides **Azure Hybrid Connection** functionality with optional **dynamic resource management** using ARM templates. Hybrid connections can be created/deleted automatically when the application starts/stops.
 
@@ -23,6 +23,7 @@ An HTTP tunneling utility that forwards HTTP traffic from Azure to your local ma
 
 ## 📋 Prerequisites
 
+- **Cross-platform support:** Windows, Linux, macOS (x64)
 - .NET 8 Runtime must be installed
 - Visual Studio or .NET CLI (for building)
 - Azure Relay namespace with SAS policy credentials
@@ -142,16 +143,29 @@ Press **Ctrl+C** or **Enter** to stop. If using dynamic resource creation, the h
 
 To compile as a self-contained executable:
 
+**Using .NET CLI:**
+```bash
+# Windows
+dotnet publish -c Release -r win-x64 --self-contained
+
+# Linux
+dotnet publish -c Release -r linux-x64 --self-contained
+
+# macOS
+dotnet publish -c Release -r osx-x64 --self-contained
+```
+
+**Using Visual Studio:**
 1. Right-click project → **Publish**
 2. Select **Folder** as target
 3. Click **Create Profile**
 4. Click **Configure** and set:
-   - Configuration: "Debug | Any CPU"
+   - Configuration: "Release | Any CPU"
    - Deployment Mode: "Self-contained"
-   - Target Runtime: "win-x64"
+   - Target Runtime: "win-x64", "linux-x64", or "osx-x64"
 5. Click **Save** → **Publish**
 
-Output location: `/bin/debug` folder with all necessary files. The `appsettings.json` can be edited without recompiling.
+Output location: `/bin/Release/net8.0/{runtime}` folder with all necessary files. The `appsettings.json` can be edited without recompiling.
 
 ## 📝 Example Output
 
