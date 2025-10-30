@@ -134,6 +134,7 @@ jobs:
         id: release_notes
         run: |
           version="${{ steps.get_version.outputs.VERSION }}"
+          tag="${{ steps.get_version.outputs.TAG }}"
           
           notes="**Azure Relay Hybrid Connections (.NET 8)**\n\n"
           notes+="**Multi-Platform Support:**\n"
@@ -141,7 +142,10 @@ jobs:
           notes+="- Linux (x64)\n"
           notes+="- macOS (x64)\n\n"
           notes+="Download the appropriate zip for your platform below, extract, rename \`appsettings-template.json\` to \`appsettings.json\`, and configure.\n\n"
-          notes+="📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingHybridConnection)"
+          notes+="📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingHybridConnection)\n\n"
+          notes+="<details>\n<summary>What's Changed</summary>\n\n"
+          notes+="See [full changelog](https://github.com/${{ github.repository }}/commits/$tag)\n\n"
+          notes+="</details>"
           
           echo "NOTES<<EOF" >> $GITHUB_OUTPUT
           echo -e "$notes" >> $GITHUB_OUTPUT
@@ -155,7 +159,6 @@ jobs:
           body: ${{ steps.release_notes.outputs.NOTES }}
           draft: false
           prerelease: false
-          generate_release_notes: true
           name: "Relay Tunnel Using Hybrid Connection ${{ steps.get_version.outputs.VERSION }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -64,7 +64,10 @@ jobs:
           $notes = "**WCF Relay (.NET Framework 4.8) - Legacy**`n`n"
           $notes += "⚠️ **Security Warning:** Uses deprecated Azure libraries. Use Hybrid Connection version for production.`n`n"
           $notes += "Download the zip below, extract, rename ``appsettings-template.json`` to ``appsettings.json``, and configure.`n`n"
-          $notes += "📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingWCF)"
+          $notes += "📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingWCF)`n`n"
+          $notes += "<details>`n<summary>What's Changed</summary>`n`n"
+          $notes += "See [full changelog](https://github.com/${{ github.repository }}/commits/$tag)`n`n"
+          $notes += "</details>"
           
           echo "NOTES<<EOF" >> $env:GITHUB_OUTPUT
           echo $notes >> $env:GITHUB_OUTPUT
@@ -78,7 +81,6 @@ jobs:
           body: ${{ steps.release_notes.outputs.NOTES }}
           draft: false
           prerelease: false
-          generate_release_notes: true
           name: "Relay Tunnel Using WCF ${{ steps.get_version.outputs.VERSION }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
