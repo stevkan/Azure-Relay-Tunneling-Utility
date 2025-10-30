@@ -5,9 +5,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <ApplicationIcon>App.ico</ApplicationIcon>
     <RootNamespace>RelayTunnelUsingHybridConnection</RootNamespace>
-    <Version>1.5.2</Version>
-    <AssemblyVersion>1.5.2.0</AssemblyVersion>
-    <FileVersion>1.5.2.0</FileVersion>
+    <Version>1.5.3</Version>
+    <AssemblyVersion>1.5.3.0</AssemblyVersion>
+    <FileVersion>1.5.3.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
