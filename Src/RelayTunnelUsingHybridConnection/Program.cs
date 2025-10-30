@@ -33,12 +33,27 @@ namespace RelayTunnelUsingHybridConnection
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", false, true)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
 
             try
             {
+                // Check if configuration file was loaded
+                if (!Configuration.GetChildren().Any())
+                {
+                    Console.WriteLine("❌ Configuration Error: appsettings.json was not found or is empty.");
+                    Console.WriteLine();
+                    Console.WriteLine($"Expected location: {System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
+                    Console.WriteLine();
+                    Console.WriteLine("Please create appsettings.json with your Azure Relay settings.");
+                    Console.WriteLine("Refer to appsettings-template.json for the required structure.");
+                    Console.WriteLine();
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadKey();
+                    return;
+                }
+
                 // Load Azure Management configuration
                 var azureManagementConfig = new AzureManagementConfig();
                 Microsoft.Extensions.Configuration.ConfigurationBinder.Bind(Configuration.GetSection("AzureManagement"), azureManagementConfig);
@@ -64,14 +79,19 @@ namespace RelayTunnelUsingHybridConnection
                 if (relayConfigs.Count == 0)
                 {
                     Console.WriteLine("❌ No relay configurations found in appsettings.json.");
-                    Console.WriteLine("Please add relay configurations to the 'Relays' section.");
+                    Console.WriteLine("Please add configurations to the 'AzureManagement' and 'Relays' sections.");
                     Console.WriteLine("Refer to appsettings-template.json for the required structure.");
+                    Console.WriteLine();
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadKey();
                     return;
                 }
 
                 // Validate configuration before proceeding
                 if (!ValidateConfiguration(relayConfigs, azureManagementConfig, hasDynamicRelays))
                 {
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadKey();
                     return;
                 }
 
@@ -81,6 +101,9 @@ namespace RelayTunnelUsingHybridConnection
                     if (string.IsNullOrEmpty(azureManagementConfig.SubscriptionId))
                     {
                         Console.WriteLine("❌ Error: Dynamic resource creation is enabled but SubscriptionId is not configured in AzureManagement section.");
+                        Console.WriteLine();
+                        Console.WriteLine("Press any key to exit...");
+                        Console.ReadKey();
                         return;
                     }
 
@@ -94,6 +117,9 @@ namespace RelayTunnelUsingHybridConnection
                 if (enabledRelayConfigs.Count == 0)
                 {
                     Console.WriteLine("No enabled relay configurations found in appsettings.json.");
+                    Console.WriteLine();
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadKey();
                     return;
                 }
 

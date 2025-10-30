@@ -1,6 +1,6 @@
 # Azure Relay Tunneling Utility
 
-**Versions:** Hybrid Connection v1.6.0 | WCF Relay v1.5.4
+**Versions:** Hybrid Connection v1.6.1 | WCF Relay v1.5.5
 
 An HTTP tunneling utility based on Azure Relay. Forward HTTP traffic from Azure to your local machine for debugging and development.
 
