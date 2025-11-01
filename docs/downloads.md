@@ -9,7 +9,7 @@ title: Downloads
 
 ## 🚀 Relay Tunnel Using Hybrid Connection (Recommended)
 
-**Latest Version: v1.6.1** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/RelayTunnelUsingHybridConnection) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/hybrid-v1.6.1)
+**Latest Version: v1.6.1** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/hybrid-v1.6.1)
 
 **Technology:** Azure Relay Hybrid Connections (.NET 8)  
 **Status:** ✅ Actively maintained, production-ready
@@ -32,7 +32,7 @@ title: Downloads
 
 ## ⚙️ Relay Tunnel Using WCF (Legacy)
 
-**Latest Version: v1.5.5** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/RelayTunnelUsingWCF) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/wcf-v1.5.5)
+**Latest Version: v1.5.5** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingWCF) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/wcf-v1.5.5)
 
 **Technology:** WCF Relay (.NET Framework 4.8)  
 **Status:** ⚠️ **Legacy - uses deprecated Azure libraries**
@@ -69,8 +69,8 @@ title: Downloads
 ## 📖 Documentation
 
 - [Main README](https://github.com/stevkan/Azure-Relay-Tunneling-Utility)
-- [Hybrid Connection Setup Guide](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/RelayTunnelUsingHybridConnection)
-- [WCF Relay Setup Guide](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/RelayTunnelUsingWCF)
+- [Hybrid Connection Setup Guide](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection)
+- [WCF Relay Setup Guide](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingWCF)
 - [Troubleshooting](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/docs/TROUBLESHOOTING.md)
 - [All Releases](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases)
 

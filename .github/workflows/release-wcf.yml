@@ -25,10 +25,10 @@ jobs:
         uses: NuGet/setup-nuget@v2
       
       - name: Restore NuGet packages
-        run: nuget restore Src/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj -PackagesDirectory Src/packages
+        run: nuget restore Src/dotnet/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj -PackagesDirectory Src/dotnet/packages
       
       - name: Build project
-        run: msbuild Src/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj /p:Configuration=Release /p:OutputPath=..\..\publish-wcf
+        run: msbuild Src/dotnet/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj /p:Configuration=Release /p:OutputPath=..\..\..\publish-wcf
       
       - name: Install Gitleaks (Secret Scanner)
         run: |
@@ -64,7 +64,7 @@ jobs:
           $notes = "**WCF Relay (.NET Framework 4.8) - Legacy**`n`n"
           $notes += "⚠️ **Security Warning:** Uses deprecated Azure libraries. Use Hybrid Connection version for production.`n`n"
           $notes += "Download the zip below, extract, rename ``appsettings-template.json`` to ``appsettings.json``, and configure.`n`n"
-          $notes += "📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingWCF)`n`n"
+          $notes += "📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/dotnet/RelayTunnelUsingWCF)`n`n"
           $notes += "<details>`n<summary>What's Changed</summary>`n`n"
           $notes += "See [full changelog](https://github.com/${{ github.repository }}/commits/$tag)`n`n"
           $notes += "</details>"

@@ -37,13 +37,13 @@ jobs:
           dotnet-version: '8.0.x'
       
       - name: Restore dependencies
-        run: dotnet restore Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj
+        run: dotnet restore Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj
       
       - name: Build project
-        run: dotnet build Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --no-restore
+        run: dotnet build Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --no-restore
       
       - name: Publish project
-        run: dotnet publish Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained false --output ./publish
+        run: dotnet publish Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained false --output ./publish
       
       - name: Install Gitleaks (Secret Scanner) - Windows
         if: matrix.os == 'windows-latest'
@@ -142,7 +142,7 @@ jobs:
           notes+="- Linux (x64)\n"
           notes+="- macOS (x64)\n\n"
           notes+="Download the appropriate zip for your platform below, extract, rename \`appsettings-template.json\` to \`appsettings.json\`, and configure.\n\n"
-          notes+="📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/RelayTunnelUsingHybridConnection)\n\n"
+          notes+="📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection)\n\n"
           notes+="<details>\n<summary>What's Changed</summary>\n\n"
           notes+="See [full changelog](https://github.com/${{ github.repository }}/commits/$tag)\n\n"
           notes+="</details>"
