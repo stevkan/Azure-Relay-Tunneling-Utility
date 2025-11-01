@@ -17,7 +17,7 @@ This utility creates a secure tunnel between Azure and your local machine, allow
 
 This repository contains two implementations using different Azure Relay technologies:
 
-### [RelayTunnelUsingHybridConnection](Src/RelayTunnelUsingHybridConnection/README.md) ✅ **Recommended**
+### [RelayTunnelUsingHybridConnection](Src/dotnet/RelayTunnelUsingHybridConnection/README.md) ✅ **Recommended**
 **Technology:** Azure Relay Hybrid Connections (.NET 8)  
 **Best For:** Modern development, production use, dynamic resource management  
 **Platform:** Cross-platform (Windows, Linux, macOS)
@@ -34,11 +34,11 @@ This repository contains two implementations using different Azure Relay technol
 - ✅ Multi-relay support in single application
 - ✅ Actively maintained
 
-**[📖 Full Documentation →](Src/RelayTunnelUsingHybridConnection/README.md)**
+**[📖 Full Documentation →](Src/dotnet/RelayTunnelUsingHybridConnection/README.md)**
 
 ---
 
-### [RelayTunnelUsingWCF](Src/RelayTunnelUsingWCF/README.md)
+### [RelayTunnelUsingWCF](Src/dotnet/RelayTunnelUsingWCF/README.md)
 **Technology:** WCF Relay (.NET Framework 4.8)  
 **Best For:** Legacy systems, existing WCF infrastructure  
 **Platform:** Windows only
@@ -55,7 +55,7 @@ This repository contains two implementations using different Azure Relay technol
 
 **⚠️ Not recommended for production use due to deprecated dependencies**
 
-**[📖 Full Documentation →](Src/RelayTunnelUsingWCF/README.md)**
+**[📖 Full Documentation →](Src/dotnet/RelayTunnelUsingWCF/README.md)**
 
 ---
 
@@ -86,14 +86,14 @@ This repository contains two implementations using different Azure Relay technol
 ## 📖 Documentation
 
 ### Project Setup Guides
-- **[Hybrid Connection Setup](Src/RelayTunnelUsingHybridConnection/README.md)** - Complete guide for modern implementation
-- **[WCF Relay Setup](Src/RelayTunnelUsingWCF/README.md)** - Complete guide for legacy implementation
+- **[Hybrid Connection Setup](Src/dotnet/RelayTunnelUsingHybridConnection/README.md)** - Complete guide for modern implementation
+- **[WCF Relay Setup](Src/dotnet/RelayTunnelUsingWCF/README.md)** - Complete guide for legacy implementation
 
 ### Additional Resources
 - **[Technical Comparison](docs/COMPARISON.md)** - Detailed WCF vs Hybrid Connection comparison and migration guide
 - **[Authentication Guide](docs/AUTHENTICATION.md)** - Azure authentication setup for dynamic resources
 - **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-- **[ARM Automation Details](Src/RelayTunnelUsingHybridConnection/README_ARM_AUTOMATION.md)** - Technical implementation details
+- **[ARM Automation Details](Src/dotnet/RelayTunnelUsingHybridConnection/README_ARM_AUTOMATION.md)** - Technical implementation details
 
 ## 🙏 Acknowledgments
 
