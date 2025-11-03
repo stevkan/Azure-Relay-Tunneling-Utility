@@ -1,0 +1,53 @@
+{
+  "name": "azure-relay-tunnel-ts",
+  "version": "0.9.0-beta.1",
+  "description": "Azure Relay Hybrid Connection Tunneling Utility (TypeScript/Node.js)",
+  "main": "dist/index.js",
+  "bin": {
+    "relay-tunnel": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc && copy .env.template dist\\.env.template",
+    "build:release": "tsc",
+    "start": "node dist/index.js",
+    "start:dev": "tsx src/index.ts",
+    "dev": "tsx --watch src/index.ts",
+    "pkg": "npm run build && pkg dist/index.js --output ./bin/relay-tunnel 2>nul",
+    "pkg:all": "npm run build && pkg dist/index.js --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --output ./bin/relay-tunnel 2>nul && copy .env.template bin\\.env.template",
+    "test": "node --test --test-reporter=spec --import tsx test/config.test.ts test/relay-resource-manager.test.ts test/dispatcher-service.test.ts"
+  },
+  "keywords": [
+    "azure",
+    "relay",
+    "hybrid-connection",
+    "tunnel",
+    "proxy",
+    "websocket"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@azure/arm-relay": "^3.1.0",
+    "@azure/identity": "^4.5.0",
+    "dotenv": "^16.4.7",
+    "hyco-https": "^1.4.5",
+    "hyco-ws": "^1.0.5",
+    "pino": "^9.5.0",
+    "pino-pretty": "^13.0.0",
+    "ws": "^8.18.0",
+    "yargs": "^17.7.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/ws": "^8.5.13",
+    "@types/yargs": "^17.0.33",
+    "esbuild": "^0.24.0",
+    "pkg": "^5.8.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
