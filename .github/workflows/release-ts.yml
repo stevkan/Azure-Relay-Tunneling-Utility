@@ -1,9 +1,9 @@
-name: Release - Hybrid Connection
+name: Release - TypeScript/Node.js
 
 on:
   push:
     tags:
-      - 'hybrid-v*'  # Triggers on tags like hybrid-v1.5.2, hybrid-v2.0.0, etc.
+      - 'ts-v*'  # Triggers on tags like ts-v0.9.0-beta.1, ts-v1.0.0, etc.
 
 permissions:
   contents: write
@@ -15,13 +15,16 @@ jobs:
         include:
           - os: windows-latest
             platform: Win-x64
-            rid: win-x64
+            pkg_script: pkg:win
+            executable: RelayTunnelUsingHybridConnection.exe
           - os: ubuntu-latest
             platform: Linux-x64
-            rid: linux-x64
+            pkg_script: pkg:linux
+            executable: RelayTunnelUsingHybridConnection
           - os: macos-latest
             platform: macOS-x64
-            rid: osx-x64
+            pkg_script: pkg:macos
+            executable: RelayTunnelUsingHybridConnection
     
     runs-on: ${{ matrix.os }}
     
@@ -29,21 +32,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for release notes
+          fetch-depth: 0
       
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          dotnet-version: '8.0.x'
+          node-version: '20.x'
       
-      - name: Restore dependencies
-        run: dotnet restore Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj
+      - name: Install dependencies
+        run: npm ci
+        working-directory: Src/ts/RelayTunnelUsingHybridConnection
       
-      - name: Build project
-        run: dotnet build Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --no-restore
+      - name: Run tests
+        run: npm test
+        working-directory: Src/ts/RelayTunnelUsingHybridConnection
       
-      - name: Publish project
-        run: dotnet publish Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained false --output ./publish
+      - name: Package binary for platform
+        run: npm run ${{ matrix.pkg_script }}
+        working-directory: Src/ts/RelayTunnelUsingHybridConnection
       
       - name: Install Gitleaks (Secret Scanner) - Windows
         if: matrix.os == 'windows-latest'
@@ -68,20 +74,20 @@ jobs:
       - name: Scan for secrets in build output - Windows
         if: matrix.os == 'windows-latest'
         run: |
-          ./gitleaks/gitleaks.exe detect --source ./publish --verbose --no-git
+          ./gitleaks/gitleaks.exe detect --source Src/ts/RelayTunnelUsingHybridConnection/bin --verbose --no-git
         continue-on-error: false
       
       - name: Scan for secrets in build output - Linux/macOS
         if: matrix.os != 'windows-latest'
         run: |
-          ./gitleaks detect --source ./publish --verbose --no-git
+          ./gitleaks detect --source Src/ts/RelayTunnelUsingHybridConnection/bin --verbose --no-git
         continue-on-error: false
       
       - name: Get version from tag
         id: get_version
         run: |
           tag="${{ github.ref_name }}"
-          version="${tag#hybrid-v}"
+          version="${tag#ts-v}"
           echo "VERSION=v$version" >> $GITHUB_OUTPUT
           echo "TAG=$tag" >> $GITHUB_OUTPUT
         shell: bash
@@ -90,21 +96,23 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           $version = "${{ steps.get_version.outputs.VERSION }}"
-          Compress-Archive -Path ./publish/* -DestinationPath "RelayTunnel-HC-NET-$version-${{ matrix.platform }}.zip"
+          cd Src/ts/RelayTunnelUsingHybridConnection/bin
+          Compress-Archive -Path * -DestinationPath "../../../../RelayTunnel-HC-TS-$version-${{ matrix.platform }}.zip"
         shell: pwsh
       
       - name: Create ZIP archive - Linux/macOS
         if: matrix.os != 'windows-latest'
         run: |
           version="${{ steps.get_version.outputs.VERSION }}"
-          cd publish && zip -r "../RelayTunnel-HC-NET-$version-${{ matrix.platform }}.zip" *
+          cd Src/ts/RelayTunnelUsingHybridConnection/bin
+          zip -r "../../../../RelayTunnel-HC-TS-$version-${{ matrix.platform }}.zip" *
         shell: bash
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.platform }}
-          path: RelayTunnel-HC-NET-${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip
+          path: RelayTunnel-HC-TS-${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip
   
   release:
     needs: build
@@ -120,7 +128,7 @@ jobs:
         id: get_version
         run: |
           tag="${{ github.ref_name }}"
-          version="${tag#hybrid-v}"
+          version="${tag#ts-v}"
           echo "VERSION=v$version" >> $GITHUB_OUTPUT
           echo "TAG=$tag" >> $GITHUB_OUTPUT
         shell: bash
@@ -136,13 +144,25 @@ jobs:
           version="${{ steps.get_version.outputs.VERSION }}"
           tag="${{ steps.get_version.outputs.TAG }}"
           
-          notes="**Azure Relay Hybrid Connections (.NET 8)**\n\n"
+          # Check if beta version
+          if [[ "$version" == *"beta"* ]]; then
+            prerelease_warning="⚠️ **BETA VERSION - Known Issues with DirectLine/Web Chat**\n\n"
+            prerelease_warning+="This TypeScript implementation has known issues when connecting to DirectLine clients:\n"
+            prerelease_warning+="- Messages may fail (502 Bad Gateway) or be delayed by several seconds\n"
+            prerelease_warning+="- Conversation update activities fail to be received\n"
+            prerelease_warning+="- WebSocket mode produces 502 errors even on successful messages (can be safely ignored)\n"
+            prerelease_warning+="- **For production DirectLine/Web Chat use, please use the .NET version**\n\n"
+          else
+            prerelease_warning=""
+          fi
+          
+          notes="${prerelease_warning}**Azure Relay Hybrid Connections (TypeScript/Node.js)**\n\n"
           notes+="**Multi-Platform Support:**\n"
-          notes+="- Windows (x64)\n"
-          notes+="- Linux (x64)\n"
-          notes+="- macOS (x64)\n\n"
-          notes+="Download the appropriate zip for your platform below, extract, rename \`appsettings-template.json\` to \`appsettings.json\`, and configure.\n\n"
-          notes+="📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection)\n\n"
+          notes+="- Windows (x64) - \`RelayTunnelUsingHybridConnection.exe\`\n"
+          notes+="- Linux (x64) - \`RelayTunnelUsingHybridConnection\`\n"
+          notes+="- macOS (x64) - \`RelayTunnelUsingHybridConnection\`\n\n"
+          notes+="Download the appropriate zip for your platform below, extract, copy \`.env.template\` to \`.env\`, and configure.\n\n"
+          notes+="📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/ts/RelayTunnelUsingHybridConnection)\n\n"
           notes+="<details>\n<summary>What's Changed</summary>\n\n"
           notes+="See [full changelog](https://github.com/${{ github.repository }}/commits/$tag)\n\n"
           notes+="</details>"
@@ -152,13 +172,24 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
         shell: bash
       
+      - name: Check if prerelease
+        id: check_prerelease
+        run: |
+          version="${{ steps.get_version.outputs.VERSION }}"
+          if [[ "$version" == *"beta"* ]] || [[ "$version" == *"alpha"* ]] || [[ "$version" == *"rc"* ]]; then
+            echo "PRERELEASE=true" >> $GITHUB_OUTPUT
+          else
+            echo "PRERELEASE=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+      
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/release-*/*.zip
           body: ${{ steps.release_notes.outputs.NOTES }}
           draft: false
-          prerelease: false
-          name: "Relay Tunnel Using Hybrid Connection ${{ steps.get_version.outputs.VERSION }}"
+          prerelease: ${{ steps.check_prerelease.outputs.PRERELEASE }}
+          name: "Relay Tunnel Using Hybrid Connection (TypeScript) ${{ steps.get_version.outputs.VERSION }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

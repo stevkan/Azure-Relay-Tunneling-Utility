@@ -1,6 +1,6 @@
 # Azure Relay Tunneling Utility
 
-**Versions:** Hybrid Connection (.NET) v1.6.1 | Hybrid Connection (TypeScript) v0.9.0-beta.1 | WCF Relay v1.5.5
+**Versions:** Hybrid Connection (.NET) v1.6.1 | Hybrid Connection (TypeScript) v0.9.0-beta.2 | WCF Relay v1.5.5
 
 An HTTP tunneling utility based on Azure Relay. Forward HTTP traffic from Azure to your local machine for debugging and development.
 
@@ -61,7 +61,7 @@ This repository contains implementations in **.NET** and **TypeScript/Node.js** 
 
 ### [RelayTunnelUsingHybridConnection (TypeScript)](Src/ts/RelayTunnelUsingHybridConnection/README.md) ⚠️ **Beta - DirectLine Issues**
 **Technology:** Azure Relay Hybrid Connections (TypeScript/Node.js)  
-**Version:** v0.9.0-beta.1  
+**Version:** v0.9.0-beta.2  
 **Best For:** Node.js/TypeScript projects, cross-platform deployments (non-DirectLine scenarios)  
 **Platform:** Cross-platform (Windows, Linux, macOS)
 
@@ -101,7 +101,7 @@ This repository contains implementations in **.NET** and **TypeScript/Node.js** 
 | Feature | Hybrid Connection (.NET) | Hybrid Connection (TypeScript) | WCF Relay (.NET) |
 |---------|--------------------------|--------------------------------|------------------|
 | **Platform** | .NET 8 | Node.js 20+ | .NET Framework 4.8 |
-| **Version** | v1.6.1 | v0.9.0-beta.1 | v1.5.5 |
+| **Version** | v1.6.1 | v0.9.0-beta.2 | v1.5.5 |
 | **OS Support** | Windows, Linux, macOS | Windows, Linux, macOS | Windows only |
 | **HTTP/REST** | ✅ Yes | ✅ Yes | ✅ Yes |
 | **WebSocket** | ✅ Yes | ⚠️ Yes (DirectLine issues) | ❌ No |
