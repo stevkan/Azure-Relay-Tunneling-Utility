@@ -2,14 +2,14 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build RelayTunnelUsingHybridConnection",
+      "label": "build HC .NET",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
         "--configuration",
         "Release",
-        "${workspaceFolder}/Src/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj",
+        "${workspaceFolder}/Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -17,25 +17,67 @@
       "group": "build"
     },
     {
-      "label": "build RelayTunnelUsingWCF",
+      "label": "build HC TypeScript",
+      "command": "npm",
+      "type": "shell",
+      "args": [
+        "run",
+        "build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/Src/ts/RelayTunnelUsingHybridConnection"
+      },
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "build WCF .NET",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
         "--configuration",
         "Release",
-        "${workspaceFolder}/Src/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj",
+        "${workspaceFolder}/Src/dotnet/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
       "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "test HC TypeScript",
+      "command": "npm",
+      "type": "shell",
+      "args": [
+        "test"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/Src/ts/RelayTunnelUsingHybridConnection"
+      },
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "package HC TypeScript (all platforms)",
+      "command": "npm",
+      "type": "shell",
+      "args": [
+        "run",
+        "pkg:all"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/Src/ts/RelayTunnelUsingHybridConnection"
+      },
+      "problemMatcher": [],
       "group": "build"
     },
     {
       "label": "build all projects",
       "dependsOn": [
-        "build RelayTunnelUsingHybridConnection",
-        "build RelayTunnelUsingWCF"
+        "build HC .NET",
+        "build HC TypeScript",
+        "build WCF .NET"
       ],
       "group": {
         "kind": "build",
