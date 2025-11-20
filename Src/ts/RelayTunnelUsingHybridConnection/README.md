@@ -1,6 +1,6 @@
 # Azure Relay Tunnel (TypeScript/Node.js)
 
-**Version: 0.9.0-beta.3**
+**Version: 0.9.0-beta.4**
 
 > **🚨 BETA VERSION - KNOWN ISSUES**
 >
