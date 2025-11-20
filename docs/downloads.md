@@ -86,14 +86,14 @@ Official releases currently provide pre-built binaries for **Windows only**. Lin
 
 ## 📊 Comparison
 
-| Feature | Hybrid Connection | WCF Relay |
-|---------|------------------|-----------|
-| **.NET Version** | .NET 8 | .NET Framework 4.8 |
-| **Platforms** | Windows (Release), Linux/macOS (Source) | Windows only |
-| **HTTP/REST Support** | ✅ Yes | ✅ Yes |
-| **WebSocket Support** | ✅ Yes | ❌ No |
-| **Production Ready** | ✅ Yes | ⚠️ No - Security Risk |
-| **Security Updates** | ✅ Active support | ❌ Deprecated libraries |
+| Feature | Hybrid Connection (.NET) | Hybrid Connection (TS) | WCF Relay |
+|---------|--------------------------|------------------------|-----------|
+| **Runtime** | .NET 8 | Node.js 20+ | .NET Framework 4.8 |
+| **Platforms** | Windows (Release), Linux/macOS (Source) | Windows (Release), Linux/macOS (Source) | Windows only |
+| **HTTP/REST Support** | ✅ Yes | ✅ Yes | ✅ Yes |
+| **WebSocket Support** | ✅ Yes | ✅ Yes | ❌ No |
+| **Production Ready** | ✅ Yes | 🧪 Beta | ⚠️ No - Security Risk |
+| **Security Updates** | ✅ Active support | ✅ Active support | ❌ Deprecated libraries |
 
 ---
 
