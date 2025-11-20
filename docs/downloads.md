@@ -30,6 +30,25 @@ title: Downloads
 
 ---
 
+## 🧪 Node.js / TypeScript Version (Beta)
+
+**Version: 0.9.0-beta.4** | [Documentation/Source](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/ts/RelayTunnelUsingHybridConnection)
+
+**Technology:** Node.js 20+ (Hybrid Connections)  
+**Status:** 🧪 **Beta** - Known issues with DirectLine/Web Chat.
+
+### Usage
+
+This version is distributed as source code or can be built into binaries.
+
+1. Clone the repository
+2. Navigate to `Src/ts/RelayTunnelUsingHybridConnection`
+3. Install dependencies: `npm install`
+4. Configure `.env` (see documentation)
+5. Run: `npm start`
+
+---
+
 ## ⚙️ Relay Tunnel Using WCF (Legacy)
 
 **Latest Version: v1.5.5** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingWCF) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/wcf-v1.5.5)
@@ -69,7 +88,8 @@ title: Downloads
 ## 📖 Documentation
 
 - [Main README](https://github.com/stevkan/Azure-Relay-Tunneling-Utility)
-- [Hybrid Connection Setup Guide](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection)
+- [Hybrid Connection Setup Guide (.NET)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection)
+- [Hybrid Connection Setup Guide (TypeScript)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/ts/RelayTunnelUsingHybridConnection)
 - [WCF Relay Setup Guide](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingWCF)
 - [Troubleshooting](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/docs/TROUBLESHOOTING.md)
 - [All Releases](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases)
