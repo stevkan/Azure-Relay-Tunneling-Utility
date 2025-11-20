@@ -15,12 +15,14 @@ This utility creates a secure tunnel between Azure and your local machine, allow
 
 ## 📦 Choose Your Project
 
-This repository contains implementations in **.NET** and **TypeScript/Node.js** using different Azure Relay technologies:
+This repository contains implementations in **.NET** and **TypeScript/Node.js** using different Azure Relay technologies.
+
+> **Note:** Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS users can easily build from source using the provided instructions.
 
 ### [RelayTunnelUsingHybridConnection](Src/dotnet/RelayTunnelUsingHybridConnection/README.md) ✅ **Recommended**
 **Technology:** Azure Relay Hybrid Connections (.NET 8)  
 **Best For:** Modern development, production use, dynamic resource management  
-**Platform:** Cross-platform (Windows, Linux, macOS)
+**Platform:** Windows (pre-built), Linux/macOS (build from source)
 
 **Protocol Support:**
 - ✅ HTTP/REST (request/response patterns)
@@ -63,7 +65,7 @@ This repository contains implementations in **.NET** and **TypeScript/Node.js** 
 **Technology:** Azure Relay Hybrid Connections (TypeScript/Node.js)  
 **Version:** v0.9.0-beta.4  
 **Best For:** Node.js/TypeScript projects, cross-platform deployments (non-DirectLine scenarios)  
-**Platform:** Cross-platform (Windows, Linux, macOS)
+**Platform:** Windows (pre-built), Linux/macOS (build from source)
 
 **Protocol Support:**
 - ✅ HTTP/REST (request/response patterns)
@@ -89,6 +91,16 @@ This repository contains implementations in **.NET** and **TypeScript/Node.js** 
 
 ---
 
+## 📥 Downloads & Building
+
+### Windows Users
+Download the latest pre-built binaries from the **[Releases Page](../../releases)**.
+
+### Linux & macOS Users
+Please refer to the project-specific documentation for build instructions:
+- **[.NET Version Build Guide](Src/dotnet/RelayTunnelUsingHybridConnection/README.md#building-from-source)**
+- **[TypeScript Version Build Guide](Src/ts/RelayTunnelUsingHybridConnection/README.md#building-from-source)**
+
 ## 🚀 Quick Start
 
 1. **Choose your project** (Hybrid Connection recommended for new projects)
@@ -102,7 +114,7 @@ This repository contains implementations in **.NET** and **TypeScript/Node.js** 
 |---------|--------------------------|--------------------------------|------------------|
 | **Platform** | .NET 8 | Node.js 20+ | .NET Framework 4.8 |
 | **Version** | v1.6.2 | v0.9.0-beta.4 | v1.5.6 |
-| **OS Support** | Windows, Linux, macOS | Windows, Linux, macOS | Windows only |
+| **OS Support** | Windows (Release), Linux/macOS (Source) | Windows (Release), Linux/macOS (Source) | Windows only |
 | **HTTP/REST** | ✅ Yes | ✅ Yes | ✅ Yes |
 | **WebSocket** | ✅ Yes | ⚠️ Yes (DirectLine issues) | ❌ No |
 | **DirectLine/Web Chat** | ✅ Fully supported | ⚠️ **Known issues (Beta)** | ❌ No WebSocket |

@@ -16,10 +16,14 @@ title: Downloads
 
 ### Downloads
 
-- **[Windows Exe (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/AzureRelayTunnelingUtility-HC-v1.6.1-Win-x64.exe)**
-- **[Windows (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/AzureRelayTunnelingUtility-HC-v1.6.1-Win-x64.zip)**
-- **[Linux (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/AzureRelayTunnelingUtility-HC-v1.6.1-Linux-x64.zip)**
-- **[macOS (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/AzureRelayTunnelingUtility-HC-v1.6.1-macOS-x64.zip)**
+**Pre-built Binaries (Windows Only):**
+- **[Windows Exe (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/RelayTunnel-HC-NET-v1.6.1-Win-x64.exe)**
+- **[Windows (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.1/RelayTunnel-HC-NET-v1.6.1-Win-x64.zip)**
+
+### Linux & macOS Users
+Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS users can build from source.
+
+👉 **[View Build Instructions for Linux/macOS](../Src/dotnet/RelayTunnelUsingHybridConnection/README.md#building-from-source)**
 
 ### Quick Start
 1. Download the appropriate zip for your platform
@@ -39,13 +43,18 @@ title: Downloads
 
 ### Usage
 
-This version is distributed as source code or can be built into binaries.
+**Windows Users:**
+Download the latest pre-built binaries from the **[Releases Page](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases)**.
+
+**Linux & macOS Users:**
+This version can be built into binaries from source.
+
+👉 **[View Build Instructions for Linux/macOS](../Src/ts/RelayTunnelUsingHybridConnection/README.md#build-executable)**
 
 1. Clone the repository
 2. Navigate to `Src/ts/RelayTunnelUsingHybridConnection`
 3. Install dependencies: `npm install`
-4. Configure `.env` (see documentation)
-5. Run: `npm start`
+4. Build for your platform: `npm run package:linux` or `npm run package:macos`
 
 ---
 
@@ -77,7 +86,7 @@ This version is distributed as source code or can be built into binaries.
 | Feature | Hybrid Connection | WCF Relay |
 |---------|------------------|-----------|
 | **.NET Version** | .NET 8 | .NET Framework 4.8 |
-| **Platforms** | Windows, Linux, macOS | Windows only |
+| **Platforms** | Windows (Release), Linux/macOS (Source) | Windows only |
 | **HTTP/REST Support** | ✅ Yes | ✅ Yes |
 | **WebSocket Support** | ✅ Yes | ❌ No |
 | **Production Ready** | ✅ Yes | ⚠️ No - Security Risk |
