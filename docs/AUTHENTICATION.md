@@ -9,7 +9,9 @@ This guide covers Azure authentication for **RelayTunnelUsingHybridConnection** 
 az login
 az account set --subscription "your-subscription-id"
 ```
-Set in `appsettings.json`:
+Set in `appsettings.json` (.NET) or `.env` (TypeScript):
+
+**.NET:**
 ```json
 "AzureManagement": {
   "SubscriptionId": "your-subscription-id",
@@ -17,8 +19,16 @@ Set in `appsettings.json`:
 }
 ```
 
+**TypeScript:**
+```bash
+AZURE_SUBSCRIPTION_ID=your-subscription-id
+AZURE_USE_DEFAULT_CREDENTIAL=true
+```
+
 **For Production:**
 Create a Service Principal and set:
+
+**.NET:**
 ```json
 "AzureManagement": {
   "SubscriptionId": "your-subscription-id",
@@ -26,6 +36,14 @@ Create a Service Principal and set:
   "ClientId": "your-client-id",
   "ClientSecret": "your-client-secret"
 }
+```
+
+**TypeScript:**
+```bash
+AZURE_SUBSCRIPTION_ID=your-subscription-id
+AZURE_USE_DEFAULT_CREDENTIAL=false
+AZURE_CLIENT_ID=your-client-id
+AZURE_CLIENT_SECRET=your-client-secret
 ```
 
 **Required Permission:** Contributor role on Resource Group (or Azure Relay Owner on namespace)
@@ -42,6 +60,8 @@ If using static resources (`DynamicResourceCreation: false`), you only need the 
 
 ## Configuration Reference
 
+### .NET Version (appsettings.json)
+
 ```json
 {
   "AzureManagement": {
@@ -52,6 +72,21 @@ If using static resources (`DynamicResourceCreation: false`), you only need the 
     "ClientSecret": ""                                  // Required if UseDefaultAzureCredential=false
   }
 }
+```
+
+### TypeScript Version (.env)
+
+For the TypeScript implementation, configuration uses environment variables (or a `.env` file):
+
+```bash
+# Azure Management
+AZURE_SUBSCRIPTION_ID=your-subscription-id
+AZURE_TENANT_ID=your-tenant-id
+AZURE_USE_DEFAULT_CREDENTIAL=true                  # true = Azure CLI/Managed Identity
+
+# Service Principal (if UseDefaultAzureCredential=false)
+AZURE_CLIENT_ID=your-client-id
+AZURE_CLIENT_SECRET=your-client-secret
 ```
 
 ---
@@ -86,7 +121,9 @@ If using static resources (`DynamicResourceCreation: false`), you only need the 
    az account set --subscription "your-subscription-id"
    ```
 
-4. Configure appsettings.json:
+4. Configure application:
+
+   **.NET (`appsettings.json`):**
    ```json
    {
      "AzureManagement": {
@@ -94,6 +131,12 @@ If using static resources (`DynamicResourceCreation: false`), you only need the 
        "UseDefaultAzureCredential": true
      }
    }
+   ```
+
+   **TypeScript (`.env`):**
+   ```bash
+   AZURE_SUBSCRIPTION_ID=your-subscription-id
+   AZURE_USE_DEFAULT_CREDENTIAL=true
    ```
 
 **Pros:**
@@ -129,7 +172,9 @@ If using static resources (`DynamicResourceCreation: false`), you only need the 
    }
    ```
 
-3. Configure appsettings.json:
+3. Configure application:
+
+   **.NET (`appsettings.json`):**
    ```json
    {
      "AzureManagement": {
@@ -140,6 +185,15 @@ If using static resources (`DynamicResourceCreation: false`), you only need the 
        "ClientSecret": "your-client-secret"
      }
    }
+   ```
+
+   **TypeScript (`.env`):**
+   ```bash
+   AZURE_SUBSCRIPTION_ID=your-subscription-id
+   AZURE_TENANT_ID=your-tenant-id
+   AZURE_USE_DEFAULT_CREDENTIAL=false
+   AZURE_CLIENT_ID=12345678-1234-1234-1234-123456789012
+   AZURE_CLIENT_SECRET=your-client-secret
    ```
 
 **Security:**
@@ -178,7 +232,9 @@ If using static resources (`DynamicResourceCreation: false`), you only need the 
      --scope /subscriptions/{subscription-id}/resourceGroups/{resource-group-name}
    ```
 
-3. Configure appsettings.json:
+3. Configure application:
+
+   **.NET (`appsettings.json`):**
    ```json
    {
      "AzureManagement": {
@@ -186,6 +242,12 @@ If using static resources (`DynamicResourceCreation: false`), you only need the 
        "UseDefaultAzureCredential": true
      }
    }
+   ```
+
+   **TypeScript (`.env`):**
+   ```bash
+   AZURE_SUBSCRIPTION_ID=your-subscription-id
+   AZURE_USE_DEFAULT_CREDENTIAL=true
    ```
 
 **Pros:**

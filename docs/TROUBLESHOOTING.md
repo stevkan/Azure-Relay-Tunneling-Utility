@@ -10,13 +10,15 @@ This guide covers common issues encountered when using Azure Relay Tunneling Uti
 - [Azure Resource Issues](#azure-resource-issues)
 - [Runtime Issues](#runtime-issues)
 - [Azure Bot Integration Issues](#azure-bot-integration-issues)
+- [TypeScript / Node.js Specific Issues](#typescript--nodejs-specific-issues)
 
 ---
 
 ## Configuration Issues
 
-### Problem: "appsettings.json not found"
+### Problem: "appsettings.json not found" (or .env issues)
 
+**For .NET Version:**
 **Symptoms:**
 - Application fails to start
 - Error message about missing configuration file
@@ -24,7 +26,15 @@ This guide covers common issues encountered when using Azure Relay Tunneling Uti
 **Solutions:**
 1. Ensure you've renamed `appsettings-template.json` to `appsettings.json`
 2. Verify the file is in the same directory as the executable
-3. Check file permissions (should be readable)
+
+**For TypeScript Version:**
+**Symptoms:**
+- Application starts but connects to nothing
+- Validation errors for missing environment variables
+
+**Solutions:**
+1. Ensure you've copied `.env.template` to `.env`
+2. Verify `.env` is in the root of the project or executable directory
 
 ---
 
@@ -418,6 +428,44 @@ export AZURE_LOG_LEVEL=verbose
 # .NET Core detailed logging
 export DOTNET_ENVIRONMENT=Development
 ```
+
+---
+
+## TypeScript / Node.js Specific Issues
+
+### Problem: 502 Bad Gateway with DirectLine/Web Chat
+
+**Symptoms:**
+- Web Chat shows "Send failed" or "Retry"
+- Browser console shows 502 errors for WebSocket messages
+- Messages may still arrive but are reported as failed to the client
+
+**Cause:**
+There is a known compatibility issue between the Azure Relay Node.js library (`hyco-ws`) and the DirectLine WebSocket protocol.
+
+**Workarounds:**
+1. **Ignore the errors:** Often the message is actually delivered despite the 502 error.
+2. **Disable WebSocket in Web Chat:** Force Web Chat to use polling mode.
+   ```js
+   window.WebChat.renderWebChat({
+     directLine: window.WebChat.createDirectLine({ token: '...' }),
+     webSocket: false // Force polling
+   }, document.getElementById('webchat'));
+   ```
+3. **Use the .NET Version:** The .NET implementation does not have this issue and is recommended for DirectLine/Web Chat use.
+
+### Problem: "Invalid relay configuration format"
+
+**Symptoms:**
+- Startup error: "Invalid relay configuration"
+- Regex validation failure
+
+**Solutions:**
+1. Ensure you are using **pipes** (`|`) as delimiters, NOT colons.
+   - ✅ Correct: `ns|name|policy|key|http://localhost...`
+   - ❌ Incorrect: `ns:name:policy:key...`
+2. Check that you have all required fields (11 fields total).
+3. Ensure empty fields (like `resourceGroup` if not dynamic) are still delimited (e.g., `...|false||true|...`).
 
 ---
 
