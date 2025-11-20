@@ -16,12 +16,6 @@ jobs:
           - os: windows-latest
             platform: Win-x64
             rid: win-x64
-          - os: ubuntu-latest
-            platform: Linux-x64
-            rid: linux-x64
-          - os: macos-latest
-            platform: macOS-x64
-            rid: osx-x64
     
     runs-on: ${{ matrix.os }}
     
@@ -45,36 +39,14 @@ jobs:
       - name: Publish project
         run: dotnet publish Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained false --output ./publish
       
-      - name: Install Gitleaks (Secret Scanner) - Windows
-        if: matrix.os == 'windows-latest'
+      - name: Install Gitleaks (Secret Scanner)
         run: |
           Invoke-WebRequest -Uri "https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_windows_x64.zip" -OutFile gitleaks.zip
           Expand-Archive -Path gitleaks.zip -DestinationPath ./gitleaks
       
-      - name: Install Gitleaks (Secret Scanner) - Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz
-          tar -xzf gitleaks_8.18.0_linux_x64.tar.gz
-          chmod +x gitleaks
-      
-      - name: Install Gitleaks (Secret Scanner) - macOS
-        if: matrix.os == 'macos-latest'
-        run: |
-          wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_darwin_x64.tar.gz
-          tar -xzf gitleaks_8.18.0_darwin_x64.tar.gz
-          chmod +x gitleaks
-      
-      - name: Scan for secrets in build output - Windows
-        if: matrix.os == 'windows-latest'
+      - name: Scan for secrets in build output
         run: |
           ./gitleaks/gitleaks.exe detect --source ./publish --verbose --no-git
-        continue-on-error: false
-      
-      - name: Scan for secrets in build output - Linux/macOS
-        if: matrix.os != 'windows-latest'
-        run: |
-          ./gitleaks detect --source ./publish --verbose --no-git
         continue-on-error: false
       
       - name: Get version from tag
@@ -86,19 +58,11 @@ jobs:
           echo "TAG=$tag" >> $GITHUB_OUTPUT
         shell: bash
       
-      - name: Create ZIP archive - Windows
-        if: matrix.os == 'windows-latest'
+      - name: Create ZIP archive
         run: |
           $version = "${{ steps.get_version.outputs.VERSION }}"
           Compress-Archive -Path ./publish/* -DestinationPath "RelayTunnel-HC-NET-$version-${{ matrix.platform }}.zip"
         shell: pwsh
-      
-      - name: Create ZIP archive - Linux/macOS
-        if: matrix.os != 'windows-latest'
-        run: |
-          version="${{ steps.get_version.outputs.VERSION }}"
-          cd publish && zip -r "../RelayTunnel-HC-NET-$version-${{ matrix.platform }}.zip" *
-        shell: bash
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -137,11 +101,9 @@ jobs:
           tag="${{ steps.get_version.outputs.TAG }}"
           
           notes="**Azure Relay Hybrid Connections (.NET 8)**\n\n"
-          notes+="**Multi-Platform Support:**\n"
-          notes+="- Windows (x64)\n"
-          notes+="- Linux (x64)\n"
-          notes+="- macOS (x64)\n\n"
-          notes+="Download the appropriate zip for your platform below, extract, rename \`appsettings-template.json\` to \`appsettings.json\`, and configure.\n\n"
+          notes+="**Platform Support:**\n"
+          notes+="- Windows (x64)\n\n"
+          notes+="Download the zip below, extract, rename \`appsettings-template.json\` to \`appsettings.json\`, and configure.\n\n"
           notes+="📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection)\n\n"
           notes+="<details>\n<summary>What's Changed</summary>\n\n"
           notes+="See [full changelog](https://github.com/${{ github.repository }}/commits/$tag)\n\n"

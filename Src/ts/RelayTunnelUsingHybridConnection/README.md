@@ -73,9 +73,19 @@ npm run dev
 
 ### Build Executable
 
+> **Note for Windows Users:** Pre-built binaries are available on the **[Releases Page](../../../releases)**.
+
+To build executables for your platform:
+
 ```bash
 # Build for all platforms
 npm run pkg:all
+
+# Build for Linux only
+npm run package:linux
+
+# Build for macOS only
+npm run package:macos
 
 # Executables will be in ./bin/
 # - relay-tunnel-win.exe (Windows)

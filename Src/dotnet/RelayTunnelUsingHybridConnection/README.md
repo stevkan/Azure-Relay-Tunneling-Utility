@@ -141,18 +141,46 @@ Press **Ctrl+C** or **Enter** to stop. If using dynamic resource creation, the h
 
 ## 📤 Publishing Executable
 
-To compile as a self-contained executable:
+### Windows Users
+Download the latest pre-built binaries from the **[Releases Page](../../../releases)**.
+
+### Building from Source (Linux/macOS)
+
+To build and run on Linux or macOS:
+
+1. **Install .NET 8 SDK:**
+   - [Download .NET 8](https://dotnet.microsoft.com/download/dotnet/8.0) for your OS.
+
+2. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/stevkan/AzureRelayTunnelingUtility.git
+   cd AzureRelayTunnelingUtility
+   ```
+
+3. **Build and Publish:**
+   ```bash
+   # Linux
+   dotnet publish Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --runtime linux-x64 --self-contained false --output ./bin/linux-x64
+
+   # macOS
+   dotnet publish Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --runtime osx-x64 --self-contained false --output ./bin/osx-x64
+   ```
+
+4. **Run the Utility:**
+   ```bash
+   # Linux
+   ./bin/linux-x64/RelayTunnelUsingHybridConnection
+
+   # macOS
+   ./bin/osx-x64/RelayTunnelUsingHybridConnection
+   ```
+
+### Publishing Self-Contained Executable
 
 **Using .NET CLI:**
 ```bash
 # Windows
 dotnet publish -c Release -r win-x64 --self-contained
-
-# Linux
-dotnet publish -c Release -r linux-x64 --self-contained
-
-# macOS
-dotnet publish -c Release -r osx-x64 --self-contained
 ```
 
 **Using Visual Studio:**
