@@ -15,7 +15,7 @@ jobs:
         include:
           - os: windows-latest
             platform: Win-x64
-            pkg_script: pkg:win
+            pkg_script: package:win
             executable: RelayTunnelUsingHybridConnection.exe
     
     runs-on: ${{ matrix.os }}
