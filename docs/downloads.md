@@ -34,31 +34,34 @@ Official releases currently provide pre-built binaries for **Windows only**. Lin
 
 ---
 
-## 🧪 Node.js / TypeScript Version (Beta)
+## 🚀 Node.js / TypeScript Version (Beta)
 
 **Version: 0.9.0-beta.4** | [Documentation/Source](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/ts/RelayTunnelUsingHybridConnection)
 
 **Technology:** Node.js 20+ (Hybrid Connections)  
 **Status:** 🧪 **Beta** - Known issues with DirectLine/Web Chat.
 
-### Usage
+### Downloads
 
-**Windows Users:**
-Download the latest pre-built binaries from the **[Releases Page](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases)**.
+**Pre-built Binaries (Windows Only):**
+- **[Windows Exe (x86)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/ts-v0.9.0-beta.4/RelayTunnel-HC-TS-v0.9.0-beta.4-Win-x64-Installer.exe)**
+- **[Windows (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/ts-v0.9.0-beta.4/RelayTunnel-HC-TS-v0.9.0-beta.4-Win-x64.zip)**
 
-**Linux & macOS Users:**
-This version can be built into binaries from source.
+### Linux & macOS Users
+Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS users can build from source.
 
 👉 **[View Build Instructions for Linux/macOS](../Src/ts/RelayTunnelUsingHybridConnection/README.md#build-executable)**
 
-1. Clone the repository
-2. Navigate to `Src/ts/RelayTunnelUsingHybridConnection`
-3. Install dependencies: `npm install`
-4. Build for your platform: `npm run package:linux` or `npm run package:macos`
+### Quick Start
+1. Download the appropriate zip for your platform
+2. Extract the contents
+3. Rename `.env-template` to `.env`
+4. Configure your Azure Relay settings
+5. Run the executable
 
 ---
 
-## ⚙️ Relay Tunnel Using WCF (Legacy)
+## 🚀 Relay Tunnel Using WCF (Legacy)
 
 **Latest Version: v1.5.5** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingWCF) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/wcf-v1.5.5)
 
