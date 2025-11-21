@@ -78,6 +78,14 @@ ipcMain.handle('get-tunnel-status', (event, id: string) => {
   return tunnelManager.getStatus(id);
 });
 
+ipcMain.handle('delete-tunnel', async (event, id: string) => {
+  const config = configService.loadConfig();
+  const newTunnels = config.tunnels.filter(t => t.id !== id);
+  config.tunnels = newTunnels;
+  configService.saveConfig(config);
+  return true;
+});
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.

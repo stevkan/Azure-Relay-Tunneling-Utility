@@ -87,6 +87,18 @@ function App() {
     await window.electronAPI.saveConfig(newConfig);
     setIsEditing(false);
     setEditingTunnel({});
+    loadConfig();
+  };
+
+  const handleDeleteTunnel = async (id: string) => {
+    if (confirm('Are you sure you want to delete this tunnel?')) {
+      // Stop it if it's running
+      if (tunnelStatuses[id] === 'running') {
+        await window.electronAPI.stopTunnel(id);
+      }
+      await window.electronAPI.deleteTunnel(id);
+      loadConfig();
+    }
   };
 
   if (!config) return <div>Loading configuration...</div>;
@@ -168,7 +180,8 @@ function App() {
                     <button onClick={() => handleToggleTunnel(t.id)} style={{ marginRight: '10px', padding: '5px 10px', background: tunnelStatuses[t.id] === 'running' ? '#d9534f' : '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                         {tunnelStatuses[t.id] === 'running' ? 'Stop' : 'Start'}
                     </button>
-                    <button onClick={() => { setEditingTunnel(t); setIsEditing(true); }} style={{ padding: '5px 10px', cursor: 'pointer' }} disabled={tunnelStatuses[t.id] === 'running'}>Edit</button>
+                    <button onClick={() => { setEditingTunnel(t); setIsEditing(true); }} style={{ padding: '5px 10px', cursor: 'pointer', marginRight: '10px' }} disabled={tunnelStatuses[t.id] === 'running'}>Edit</button>
+                    <button onClick={() => handleDeleteTunnel(t.id)} style={{ padding: '5px 10px', cursor: 'pointer', background: '#d9534f', color: 'white', border: 'none', borderRadius: '4px' }} disabled={tunnelStatuses[t.id] === 'running'}>Delete</button>
                   </div>
                 </div>
               ))}

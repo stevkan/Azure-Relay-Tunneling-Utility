@@ -8,6 +8,7 @@ export interface IElectronAPI {
   startTunnel: (id: string) => Promise<boolean>;
   stopTunnel: (id: string) => Promise<boolean>;
   getTunnelStatus: (id: string) => Promise<'running' | 'stopped' | 'error'>;
+  deleteTunnel: (id: string) => Promise<boolean>;
 }
 
 declare global {

@@ -11,4 +11,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   startTunnel: (id: string) => ipcRenderer.invoke('start-tunnel', id),
   stopTunnel: (id: string) => ipcRenderer.invoke('stop-tunnel', id),
   getTunnelStatus: (id: string) => ipcRenderer.invoke('get-tunnel-status', id),
+  deleteTunnel: (id: string) => ipcRenderer.invoke('delete-tunnel', id),
 });

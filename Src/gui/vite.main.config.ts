@@ -8,4 +8,12 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, '../ts/RelayTunnelUsingHybridConnection/src'),
     },
   },
+  build: {
+    commonjsOptions: {
+        ignore: ['@primno/dpapi']
+    },
+    rollupOptions: {
+      external: ['@primno/dpapi']
+    }
+  }
 });
