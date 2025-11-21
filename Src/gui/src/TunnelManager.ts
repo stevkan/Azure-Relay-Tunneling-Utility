@@ -4,6 +4,8 @@ import { AppConfig, TunnelConfig } from '@shared/types/Configuration';
 import { ChildProcess, spawn } from 'child_process';
 import path from 'path';
 import { SimpleLogger } from '@shared/simple-logger';
+import { app } from 'electron';
+import fs from 'fs';
 
 interface ActiveTunnel {
   id: string;
@@ -95,26 +97,25 @@ export class TunnelManager {
     });
   }
 
+  private getBinaryPath(relativePath: string, fileName: string): string {
+    if (app.isPackaged) {
+      return path.join(process.resourcesPath, 'bin', fileName);
+    } else {
+      return path.resolve(__dirname, relativePath, fileName);
+    }
+  }
+
   private async startDotNetCoreTunnel(tunnel: TunnelConfig) {
-    // Path relative to the root of the repo for dev
-    // In prod, we need to bundle these
-    const exePath = path.resolve(__dirname, '../../../../../Src/dotnet/RelayTunnelUsingHybridConnection/bin/Debug/net8.0/RelayTunnelUsingHybridConnection.exe');
-    
-    // We can pass config via CLI args if we implement that, 
-    // OR we rely on the fact that the process reads the SAME config file
-    // BUT the .NET process by default reads all enabled tunnels. 
-    // We want to run ONE specific tunnel.
-    // The current .NET implementation runs ALL enabled tunnels from config.
-    
-    // To support running a single tunnel, we might need to update the .NET CLI to accept overrides or an ID.
-    // Alternatively, the GUI can generate a temporary config file for that process.
-    // OR we just let it run and it will pick up the config. But wait, if we have 5 tunnels in config, and we click "Start" on one in GUI,
-    // we don't want to launch 5 processes each running 5 tunnels (25 tunnels!).
-    
-    // SOLUTION: Update .NET apps to accept `--tunnel-id <id>` to run only a specific tunnel from the shared config.
-    // This is a good feature to add to Phase 3/4.
+    const exePath = this.getBinaryPath(
+        '../../../../../Src/dotnet/RelayTunnelUsingHybridConnection/bin/Debug/net8.0/', 
+        'RelayTunnelUsingHybridConnection.exe'
+    );
     
     console.log(`Launching .NET Core tunnel: ${exePath}`);
+    if (!fs.existsSync(exePath)) {
+        throw new Error(`Executable not found at ${exePath}`);
+    }
+
     const child = spawn(exePath, ['--tunnel-id', tunnel.id], {
         windowsHide: true
     });
@@ -123,9 +124,16 @@ export class TunnelManager {
   }
 
   private async startDotNetWcfTunnel(tunnel: TunnelConfig) {
-    const exePath = path.resolve(__dirname, '../../../../../Src/dotnet/RelayTunnelUsingWCF/bin/Debug/RelayTunnelUsingWCF.exe');
+    const exePath = this.getBinaryPath(
+        '../../../../../Src/dotnet/RelayTunnelUsingWCF/bin/Debug/',
+        'RelayTunnelUsingWCF.exe'
+    );
     
     console.log(`Launching .NET WCF tunnel: ${exePath}`);
+    if (!fs.existsSync(exePath)) {
+        throw new Error(`Executable not found at ${exePath}`);
+    }
+
     const child = spawn(exePath, ['--tunnel-id', tunnel.id], {
         windowsHide: true
     });
