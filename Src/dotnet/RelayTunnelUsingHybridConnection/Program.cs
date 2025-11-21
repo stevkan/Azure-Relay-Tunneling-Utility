@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Runtime.InteropServices;
+using RelayTunnelUsingHybridConnection.Configuration;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace RelayTunnelUsingHybridConnection
 {
@@ -20,282 +23,243 @@ namespace RelayTunnelUsingHybridConnection
         private const int CTRL_SHUTDOWN_EVENT = 6;
         private const int DEFAULT_SHUTDOWN_TIMEOUT_SECONDS = 30;
 
-        // Keep delegate alive to prevent garbage collection while native code holds reference
         private static ConsoleCtrlDelegate _consoleCtrlHandler;
 
-        public static IConfiguration Configuration { get; set; }
+        // NOTE: We are moving away from IConfiguration for relays, but might still use it for AzureManagement if loaded from legacy env
+        // For now, we focus on ConfigService.
 
         public static async Task Main(string[] args)
         {
+            var configService = new ConfigService();
+
+            if (args.Length > 0 && args[0] == "config")
+            {
+                if (args.Length > 1 && args[1] == "edit")
+                {
+                    var path = configService.GetConfigPath();
+                    Console.WriteLine($"Opening config file: {path}");
+                    // Create file if not exists to avoid editor error
+                    if (!System.IO.File.Exists(path)) {
+                        configService.SaveConfig(new AppConfig());
+                    }
+                    new Process { StartInfo = new ProcessStartInfo(path) { UseShellExecute = true } }.Start();
+                    return;
+                }
+                if (args.Length > 1 && args[1] == "show")
+                {
+                    var cfg = configService.LoadConfig();
+                    Console.WriteLine($"Configuration file: {configService.GetConfigPath()}");
+                    Console.WriteLine(JsonSerializer.Serialize(cfg, new JsonSerializerOptions { WriteIndented = true }));
+                    return;
+                }
+            }
+
             Console.WriteLine("Azure Relay Hybrid Connection Utility (.NET Core)");
             Console.WriteLine("============================================");
             Console.WriteLine();
 
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
+            var appConfig = configService.LoadConfig();
+            var myTunnels = appConfig.Tunnels.Where(t => t.Type == "dotnet-core").ToList();
 
-            try
+            if (appConfig.Tunnels.Count == 0)
             {
-                // Check if configuration file was loaded
-                if (!Configuration.GetChildren().Any())
+                Console.WriteLine("No tunnels configured.");
+                Console.Write("Would you like to set up a tunnel now? [Y/n]: ");
+                var response = Console.ReadLine();
+                if (string.IsNullOrEmpty(response) || response.ToLower().StartsWith("y"))
                 {
-                    Console.WriteLine("❌ Configuration Error: appsettings.json was not found or is empty.");
-                    Console.WriteLine();
-                    Console.WriteLine($"Expected location: {System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json")}");
-                    Console.WriteLine();
-                    Console.WriteLine("Please create appsettings.json with your Azure Relay settings.");
-                    Console.WriteLine("Refer to appsettings-template.json for the required structure.");
-                    Console.WriteLine();
-                    Console.WriteLine("Press any key to exit...");
-                    Console.ReadKey();
-                    return;
-                }
-
-                // Load Azure Management configuration
-                var azureManagementConfig = new AzureManagementConfig();
-                Microsoft.Extensions.Configuration.ConfigurationBinder.Bind(Configuration.GetSection("AzureManagement"), azureManagementConfig);
-
-                // Initialize ARM resource manager if we have valid configuration
-                RelayResourceManager resourceManager = null;
-                var hasDynamicRelays = false;
-
-                // Use GetChildren and manual binding for .NET 8 compatibility
-                var relayConfigs = new List<RelayConfig>();
-                foreach (var section in Configuration.GetSection("Relays").GetChildren())
-                {
-                    var cfg = new RelayConfig();
-                    Microsoft.Extensions.Configuration.ConfigurationBinder.Bind(section, cfg);
-                    relayConfigs.Add(cfg);
-                    
-                    if (cfg.DynamicResourceCreation)
+                    var newTunnel = InteractiveSetup(configService);
+                    if (newTunnel != null)
                     {
-                        hasDynamicRelays = true;
+                        appConfig.Tunnels.Add(newTunnel);
+                        configService.SaveConfig(appConfig);
+                        Console.WriteLine("Configuration saved successfully!");
+                        myTunnels.Add(newTunnel);
                     }
-                }
-
-                if (relayConfigs.Count == 0)
-                {
-                    Console.WriteLine("❌ No relay configurations found in appsettings.json.");
-                    Console.WriteLine("Please add configurations to the 'AzureManagement' and 'Relays' sections.");
-                    Console.WriteLine("Refer to appsettings-template.json for the required structure.");
-                    Console.WriteLine();
-                    Console.WriteLine("Press any key to exit...");
-                    Console.ReadKey();
-                    return;
-                }
-
-                // Validate configuration before proceeding
-                if (!ValidateConfiguration(relayConfigs, azureManagementConfig, hasDynamicRelays))
-                {
-                    Console.WriteLine("Press any key to exit...");
-                    Console.ReadKey();
-                    return;
-                }
-
-                // Initialize ARM resource manager if needed
-                if (hasDynamicRelays)
-                {
-                    if (string.IsNullOrEmpty(azureManagementConfig.SubscriptionId))
+                    else
                     {
-                        Console.WriteLine("❌ Error: Dynamic resource creation is enabled but SubscriptionId is not configured in AzureManagement section.");
-                        Console.WriteLine();
-                        Console.WriteLine("Press any key to exit...");
-                        Console.ReadKey();
                         return;
                     }
-
-                    Console.WriteLine("Initializing Azure Resource Manager for dynamic resource management...");
-                    resourceManager = new RelayResourceManager(azureManagementConfig);
-                    Console.WriteLine("✓ Azure Resource Manager initialized");
                 }
-
-                // Only create relays where IsEnabled is true
-                var enabledRelayConfigs = relayConfigs.Where(cfg => cfg.IsEnabled).ToList();
-                if (enabledRelayConfigs.Count == 0)
+                else
                 {
-                    Console.WriteLine("No enabled relay configurations found in appsettings.json.");
-                    Console.WriteLine();
-                    Console.WriteLine("Press any key to exit...");
-                    Console.ReadKey();
+                    Console.WriteLine("Exiting. Use 'dotnet run -- config edit' to configure manually.");
                     return;
                 }
+            }
+            
+            if (myTunnels.Count == 0)
+            {
+                Console.WriteLine("No tunnels of type 'dotnet-core' found in configuration.");
+                Console.WriteLine($"Found {appConfig.Tunnels.Count} total tunnels.");
+                return;
+            }
 
-                Console.WriteLine($"Found {enabledRelayConfigs.Count} enabled relay configuration(s):");
-                foreach (var cfg in enabledRelayConfigs)
-                {
-                    Console.WriteLine($"  • {cfg.RelayName} → {cfg.TargetServiceAddress} (Dynamic: {cfg.DynamicResourceCreation})");
-                    
-                    // Warn if relay name was auto-converted to lowercase
-                    if (!string.IsNullOrEmpty(cfg.OriginalRelayName))
-                    {
-                        Console.WriteLine($"    ⚠ Relay name '{cfg.OriginalRelayName}' converted to '{cfg.RelayName}' (Azure requires lowercase)");
-                    }
-                }
-                Console.WriteLine();
+            Console.WriteLine($"Found {myTunnels.Count} enabled relay configuration(s):");
+            Console.WriteLine();
 
-                var dispatcherServices = enabledRelayConfigs.Select(cfg =>
-                {
-                    return new DispatcherService(cfg, resourceManager);
-                }).ToList();
-
-                var openTasks = dispatcherServices.Select(ds => ds.OpenAsync(CancellationToken.None)).ToList();
-                await Task.WhenAll(openTasks);
-
-                using var exitEvent = new ManualResetEvent(false);
-                
-                Console.CancelKeyPress += (sender, e) =>
-                {
-                    e.Cancel = true;
-                    exitEvent.Set();
-                };
-
-                _consoleCtrlHandler = ctrlType =>
-                {
-                    if (ctrlType == CTRL_CLOSE_EVENT || ctrlType == CTRL_LOGOFF_EVENT || ctrlType == CTRL_SHUTDOWN_EVENT)
-                    {
-                        exitEvent.Set();
-                        return true;
-                    }
-                    return false;
-                };
-                SetConsoleCtrlHandler(_consoleCtrlHandler, true);
-
-                Console.WriteLine("Press Enter or Ctrl+C to stop...");
-                var readLineTask = Task.Run(() => Console.ReadLine());
-                var exitTask = Task.Run(() => exitEvent.WaitOne());
-
-                var completedTask = await Task.WhenAny(readLineTask, exitTask);
-
-                // Ensure both tasks are completed before proceeding to shutdown
-                if (completedTask == exitTask && !readLineTask.IsCompleted)
-                {
-                    // Try to signal Console.ReadLine to complete by sending a newline
-                    try
-                    {
-                        if (!Console.IsInputRedirected)
-                        {
-                            Console.WriteLine();
-                        }
-                    }
-                    catch { /* Ignore any errors */ }
-                    await readLineTask;
-                }
-                else if (completedTask == readLineTask && !exitTask.IsCompleted)
-                {
-                    exitEvent.Set();
-                    await exitTask;
-                }
-                Console.WriteLine("Shutting down and cleaning up resources...");
-                
-                // Get configurable shutdown timeout or use default
-                var shutdownTimeoutSeconds = Configuration.GetValue<int?>("ShutdownTimeoutSeconds") ?? DEFAULT_SHUTDOWN_TIMEOUT_SECONDS;
-                using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(shutdownTimeoutSeconds));
-                
+            // Map to legacy RelayConfig for internal use
+            var relayConfigs = new List<RelayConfig>();
+            foreach (var t in myTunnels)
+            {
                 try
                 {
-                    var closeTasks = dispatcherServices.Select(ds => ds.CloseAsync(shutdownCts.Token)).ToList();
-                    await Task.WhenAll(closeTasks);
-                    Console.WriteLine("✓ All resources cleaned up successfully");
+                    var key = configService.DecryptKey(t.EncryptedKey);
+                    relayConfigs.Add(new RelayConfig
+                    {
+                        RelayNamespace = t.RelayNamespace,
+                        RelayName = t.HybridConnectionName,
+                        PolicyName = t.KeyName,
+                        PolicyKey = key,
+                        TargetServiceAddress = $"http://{t.TargetHost}:{t.TargetPort}/",
+                        IsEnabled = true,
+                        DynamicResourceCreation = false // Not supported in simple config yet
+                    });
                 }
-                catch (OperationCanceledException)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠️ Shutdown timeout ({shutdownTimeoutSeconds}s) exceeded. Some resources may not have cleaned up properly.");
+                    Console.WriteLine($"❌ Failed to decrypt key for tunnel '{t.Name}': {ex.Message}");
                 }
-                catch (Exception cleanupEx)
+            }
+
+            // Start services
+            var dispatcherServices = relayConfigs.Select(cfg =>
+            {
+                // Passing null for ResourceManager as dynamic creation is not yet supported in this path
+                return new DispatcherService(cfg, null);
+            }).ToList();
+
+            var openTasks = dispatcherServices.Select(ds => ds.OpenAsync(CancellationToken.None)).ToList();
+            await Task.WhenAll(openTasks);
+
+            using var exitEvent = new ManualResetEvent(false);
+            
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                e.Cancel = true;
+                exitEvent.Set();
+            };
+
+            _consoleCtrlHandler = ctrlType =>
+            {
+                if (ctrlType == CTRL_CLOSE_EVENT || ctrlType == CTRL_LOGOFF_EVENT || ctrlType == CTRL_SHUTDOWN_EVENT)
                 {
-                    Console.WriteLine($"⚠️ Error during cleanup: {cleanupEx.Message}");
+                    exitEvent.Set();
+                    return true;
                 }
+                return false;
+            };
+            SetConsoleCtrlHandler(_consoleCtrlHandler, true);
+
+            Console.WriteLine("Press Enter or Ctrl+C to stop...");
+            var readLineTask = Task.Run(() => Console.ReadLine());
+            var exitTask = Task.Run(() => exitEvent.WaitOne());
+
+            var completedTask = await Task.WhenAny(readLineTask, exitTask);
+
+            if (completedTask == exitTask && !readLineTask.IsCompleted)
+            {
+                try { if (!Console.IsInputRedirected) Console.WriteLine(); } catch { }
+                await readLineTask;
+            }
+            else if (completedTask == readLineTask && !exitTask.IsCompleted)
+            {
+                exitEvent.Set();
+                await exitTask;
+            }
+
+            Console.WriteLine("Shutting down...");
+            
+            using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(DEFAULT_SHUTDOWN_TIMEOUT_SECONDS));
+            
+            try
+            {
+                var closeTasks = dispatcherServices.Select(ds => ds.CloseAsync(shutdownCts.Token)).ToList();
+                await Task.WhenAll(closeTasks);
+                Console.WriteLine("✓ All resources cleaned up successfully");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"   Inner Exception: {ex.InnerException.Message}");
-                }
-                Console.WriteLine();
-                Console.WriteLine("Press any key to exit...");
-                Console.ReadKey();
+                Console.WriteLine($"⚠️ Error during cleanup: {ex.Message}");
             }
         }
 
-        private static bool ValidateConfiguration(List<RelayConfig> relayConfigs, AzureManagementConfig azureConfig, bool hasDynamicRelays)
+        private static TunnelConfig InteractiveSetup(ConfigService configService)
         {
-            var errors = new List<string>();
-            var enabledRelays = relayConfigs.Where(r => r.IsEnabled).ToList();
-
-            if (enabledRelays.Count == 0)
+            try
             {
-                return true;
-            }
+                Console.Write("Tunnel Name (e.g. Production DB): ");
+                var name = Console.ReadLine();
 
-            foreach (var relay in enabledRelays)
-            {
-                var missingFields = new List<string>();
+                Console.Write("Azure Relay Namespace: ");
+                var ns = Console.ReadLine();
 
-                if (string.IsNullOrWhiteSpace(relay.RelayNamespace))
-                    missingFields.Add("RelayNamespace");
-                if (string.IsNullOrWhiteSpace(relay.RelayName))
-                    missingFields.Add("RelayName");
-                if (string.IsNullOrWhiteSpace(relay.PolicyName))
-                    missingFields.Add("PolicyName");
-                if (string.IsNullOrWhiteSpace(relay.PolicyKey))
-                    missingFields.Add("PolicyKey");
-                if (string.IsNullOrWhiteSpace(relay.TargetServiceAddress))
-                    missingFields.Add("TargetServiceAddress");
+                Console.Write("Hybrid Connection Name: ");
+                var hc = Console.ReadLine();
 
-                if (relay.DynamicResourceCreation && string.IsNullOrWhiteSpace(relay.ResourceGroupName))
-                    missingFields.Add("ResourceGroupName (required when DynamicResourceCreation is true)");
+                Console.Write("SAS Key Name [RootManageSharedAccessKey]: ");
+                var keyName = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(keyName)) keyName = "RootManageSharedAccessKey";
 
-                if (missingFields.Count > 0)
-                {
-                    errors.Add($"Relay '{relay.RelayName ?? "unnamed"}' is missing: {string.Join(", ", missingFields)}");
-                }
-            }
-
-            if (hasDynamicRelays)
-            {
-                var azureMissingFields = new List<string>();
-
-                if (string.IsNullOrWhiteSpace(azureConfig.SubscriptionId))
-                    azureMissingFields.Add("SubscriptionId");
-                if (string.IsNullOrWhiteSpace(azureConfig.TenantId))
-                    azureMissingFields.Add("TenantId");
-
-                if (!azureConfig.UseDefaultAzureCredential)
-                {
-                    if (string.IsNullOrWhiteSpace(azureConfig.ClientId))
-                        azureMissingFields.Add("ClientId (required when UseDefaultAzureCredential is false)");
-                    if (string.IsNullOrWhiteSpace(azureConfig.ClientSecret))
-                        azureMissingFields.Add("ClientSecret (required when UseDefaultAzureCredential is false)");
-                }
-
-                if (azureMissingFields.Count > 0)
-                {
-                    errors.Add($"AzureManagement section is missing: {string.Join(", ", azureMissingFields)}");
-                }
-            }
-
-            if (errors.Count > 0)
-            {
-                Console.WriteLine("❌ Configuration Error: appsettings.json has not been properly configured.");
+                Console.Write("SAS Key: ");
+                var key = ReadPassword();
                 Console.WriteLine();
-                Console.WriteLine("Missing required configuration values:");
-                foreach (var error in errors)
-                {
-                    Console.WriteLine($"  • {error}");
-                }
-                Console.WriteLine();
-                Console.WriteLine("Please update appsettings.json with your Azure Relay settings.");
-                Console.WriteLine("Refer to appsettings-template.json for the required fields.");
-                Console.WriteLine();
-                return false;
-            }
 
-            return true;
+                Console.Write("Target Host [localhost]: ");
+                var host = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(host)) host = "localhost";
+
+                Console.Write("Target Port [8080]: ");
+                var portStr = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(portStr)) portStr = "8080";
+                int.TryParse(portStr, out int port);
+
+                return new TunnelConfig
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name,
+                    Type = "dotnet-core",
+                    RelayNamespace = ns,
+                    HybridConnectionName = hc,
+                    KeyName = keyName,
+                    EncryptedKey = configService.EncryptKey(key),
+                    TargetHost = host,
+                    TargetPort = port
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during setup: {ex.Message}");
+                return null;
+            }
+        }
+
+        private static string ReadPassword()
+        {
+            string pass = "";
+            do
+            {
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                // Backspace Should Not Work
+                if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
+                {
+                    pass += key.KeyChar;
+                    Console.Write("*");
+                }
+                else
+                {
+                    if (key.Key == ConsoleKey.Backspace && pass.Length > 0)
+                    {
+                        pass = pass.Substring(0, (pass.Length - 1));
+                        Console.Write("\b \b");
+                    }
+                    else if(key.Key == ConsoleKey.Enter)
+                    {
+                        break;
+                    }
+                }
+            } while (true);
+            return pass;
         }
     }
 }

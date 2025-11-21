@@ -23,6 +23,11 @@ namespace RelayTunnelUsingHybridConnection.Configuration
             }
         }
 
+        public string GetConfigPath()
+        {
+            return _configPath;
+        }
+
         public AppConfig LoadConfig()
         {
             if (!File.Exists(_configPath))

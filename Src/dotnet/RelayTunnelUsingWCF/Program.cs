@@ -6,47 +6,106 @@ using System.ServiceModel;
 using System.ServiceModel.Description;
 using Microsoft.ServiceBus;
 using Newtonsoft.Json;
+using RelayTunnelUsingWCF.Configuration;
+using System.Diagnostics;
 
 namespace RelayTunnelUsingWCF
 {
     class Program
     {
         private static List<ServiceHost> _serviceHosts = new List<ServiceHost>();
-        private static AppSettings _appSettings;
 
         static void Main(string[] args)
         {
+            var configService = new ConfigService();
+
+            if (args.Length > 0 && args[0] == "config")
+            {
+                if (args.Length > 1 && args[1] == "edit")
+                {
+                    var path = configService.GetConfigPath();
+                    Console.WriteLine($"Opening config file: {path}");
+                    if (!File.Exists(path))
+                    {
+                        configService.SaveConfig(new AppConfig());
+                    }
+                    Process.Start(path);
+                    return;
+                }
+                if (args.Length > 1 && args[1] == "show")
+                {
+                    var cfg = configService.LoadConfig();
+                    Console.WriteLine($"Configuration file: {configService.GetConfigPath()}");
+                    Console.WriteLine(JsonConvert.SerializeObject(cfg, Formatting.Indented));
+                    return;
+                }
+            }
+
             Console.WriteLine("Azure Relay WCF Utility (.NET Framework)");
             Console.WriteLine("===============================================");
 
             try
             {
-                // Load configuration from appsettings.json
-                LoadConfiguration();
+                var appConfig = configService.LoadConfig();
+                var myTunnels = appConfig.Tunnels.Where(t => t.Type == "dotnet-wcf").ToList();
 
-                var enabledRelays = _appSettings.Relays.Where(r => r.IsEnabled).ToList();
-                
-                if (enabledRelays.Count == 0)
+                if (appConfig.Tunnels.Count == 0)
                 {
-                    Console.WriteLine("❌ No enabled relay configurations found in appsettings.json");
-                    Console.WriteLine("Press any key to exit...");
-                    Console.ReadKey();
+                    Console.WriteLine("No tunnels configured.");
+                    Console.Write("Would you like to set up a tunnel now? [Y/n]: ");
+                    var response = Console.ReadLine();
+                    if (string.IsNullOrEmpty(response) || response.ToLower().StartsWith("y"))
+                    {
+                        var newTunnel = InteractiveSetup(configService);
+                        if (newTunnel != null)
+                        {
+                            appConfig.Tunnels.Add(newTunnel);
+                            configService.SaveConfig(appConfig);
+                            Console.WriteLine("Configuration saved successfully!");
+                            myTunnels.Add(newTunnel);
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Exiting. Use 'RelayTunnelUsingWCF.exe config edit' to configure manually.");
+                        return;
+                    }
+                }
+
+                if (myTunnels.Count == 0)
+                {
+                    Console.WriteLine("No tunnels of type 'dotnet-wcf' found in configuration.");
+                    Console.WriteLine($"Found {appConfig.Tunnels.Count} total tunnels.");
                     return;
                 }
 
-                Console.WriteLine($"Found {enabledRelays.Count} enabled relay configuration(s):");
+                Console.WriteLine($"Found {myTunnels.Count} enabled relay configuration(s):");
                 Console.WriteLine();
 
-                // Start each enabled relay
-                foreach (var config in enabledRelays)
+                foreach (var t in myTunnels)
                 {
                     try
                     {
+                        var key = configService.DecryptKey(t.EncryptedKey);
+                        var config = new RelayConfiguration
+                        {
+                            RelayNamespace = t.RelayNamespace,
+                            RelayName = t.HybridConnectionName, // In WCF, this is the Relay name
+                            PolicyName = t.KeyName,
+                            PolicyKey = key,
+                            TargetServiceAddress = $"http://{t.TargetHost}:{t.TargetPort}/",
+                            ServiceDiscoveryMode = "Private" // Default to private
+                        };
+
                         StartRelay(config);
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"❌ Failed to start relay '{config.RelayName}': {ex.Message}");
+                        Console.WriteLine($"❌ Failed to start relay '{t.Name}': {ex.Message}");
                     }
                 }
 
@@ -88,72 +147,82 @@ namespace RelayTunnelUsingWCF
             }
         }
 
-        private static void LoadConfiguration()
+        private static TunnelConfig InteractiveSetup(ConfigService configService)
         {
-            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
-            
-            if (!File.Exists(configPath))
+            try
             {
-                Console.WriteLine("❌ Configuration Error: appsettings.json was not found.");
+                Console.Write("Tunnel Name (e.g. Legacy WCF Service): ");
+                var name = Console.ReadLine();
+
+                Console.Write("Azure Relay Namespace: ");
+                var ns = Console.ReadLine();
+
+                Console.Write("Relay Name (WCF Relay): ");
+                var hc = Console.ReadLine();
+
+                Console.Write("SAS Key Name [RootManageSharedAccessKey]: ");
+                var keyName = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(keyName)) keyName = "RootManageSharedAccessKey";
+
+                Console.Write("SAS Key: ");
+                var key = ReadPassword();
                 Console.WriteLine();
-                Console.WriteLine($"Expected location: {configPath}");
-                Console.WriteLine();
-                Console.WriteLine("Please create appsettings.json with your Azure Relay settings.");
-                Console.WriteLine("Refer to appsettings-template.json for the required structure.");
-                Console.WriteLine();
-                throw new FileNotFoundException("appsettings.json file not found.");
+
+                Console.Write("Target Host [localhost]: ");
+                var host = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(host)) host = "localhost";
+
+                Console.Write("Target Port [8080]: ");
+                var portStr = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(portStr)) portStr = "8080";
+                int.TryParse(portStr, out int port);
+
+                return new TunnelConfig
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = name,
+                    Type = "dotnet-wcf",
+                    RelayNamespace = ns,
+                    HybridConnectionName = hc,
+                    KeyName = keyName,
+                    EncryptedKey = configService.EncryptKey(key),
+                    TargetHost = host,
+                    TargetPort = port
+                };
             }
-
-            var jsonContent = File.ReadAllText(configPath);
-            _appSettings = JsonConvert.DeserializeObject<AppSettings>(jsonContent);
-
-            if (_appSettings?.Relays == null || _appSettings.Relays.Count == 0)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException("No relay configurations found in appsettings.json");
+                Console.WriteLine($"Error during setup: {ex.Message}");
+                return null;
             }
-
-            // Check if configuration appears to be unconfigured (template values)
-            CheckForUnconfiguredSettings();
         }
 
-        private static void CheckForUnconfiguredSettings()
+        private static string ReadPassword()
         {
-            var unconfiguredRelays = new List<string>();
-
-            foreach (var relay in _appSettings.Relays.Where(r => r.IsEnabled))
+            string pass = "";
+            do
             {
-                var missingFields = new List<string>();
-
-                if (string.IsNullOrWhiteSpace(relay.RelayNamespace))
-                    missingFields.Add("RelayNamespace");
-                if (string.IsNullOrWhiteSpace(relay.RelayName))
-                    missingFields.Add("RelayName");
-                if (string.IsNullOrWhiteSpace(relay.PolicyName))
-                    missingFields.Add("PolicyName");
-                if (string.IsNullOrWhiteSpace(relay.PolicyKey))
-                    missingFields.Add("PolicyKey");
-
-                if (missingFields.Count > 0)
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                // Backspace Should Not Work
+                if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
                 {
-                    unconfiguredRelays.Add($"Relay '{relay.RelayName ?? "unnamed"}' is missing: {string.Join(", ", missingFields)}");
+                    pass += key.KeyChar;
+                    Console.Write("*");
                 }
-            }
-
-            if (unconfiguredRelays.Count > 0)
-            {
-                Console.WriteLine("❌ Configuration Error: appsettings.json has not been properly configured.");
-                Console.WriteLine();
-                Console.WriteLine("Missing required configuration values:");
-                foreach (var error in unconfiguredRelays)
+                else
                 {
-                    Console.WriteLine($"  • {error}");
+                    if (key.Key == ConsoleKey.Backspace && pass.Length > 0)
+                    {
+                        pass = pass.Substring(0, (pass.Length - 1));
+                        Console.Write("\b \b");
+                    }
+                    else if(key.Key == ConsoleKey.Enter)
+                    {
+                        break;
+                    }
                 }
-                Console.WriteLine();
-                Console.WriteLine("Please update appsettings.json with your Azure Relay settings.");
-                Console.WriteLine("Refer to appsettings-template.json for the required fields.");
-                Console.WriteLine();
-                throw new InvalidOperationException("Configuration validation failed. Please configure appsettings.json before running.");
-            }
+            } while (true);
+            return pass;
         }
 
         private static void StartRelay(RelayConfiguration config)
