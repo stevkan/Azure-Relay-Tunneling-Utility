@@ -47,6 +47,15 @@ function App() {
     updateStatuses();
   };
 
+  const getTunnelTypeLabel = (type: string) => {
+    switch (type) {
+      case 'typescript': return 'Hybrid Connection (Node.js) - Beta';
+      case 'dotnet-core': return 'Hybrid Connection (.NET)';
+      case 'dotnet-wcf': return 'WCF (.NET Framework) - Legacy';
+      default: return type;
+    }
+  };
+
   const handleSave = async () => {
     if (!config) return;
     await window.electronAPI.saveConfig(config);
@@ -118,9 +127,9 @@ function App() {
             <label>
               Type:
               <select style={{width: '100%'}} value={editingTunnel.type || 'typescript'} onChange={e => setEditingTunnel({...editingTunnel, type: e.target.value as any})}>
-                <option value="typescript">TypeScript (Node.js)</option>
-                <option value="dotnet-core">.NET 8</option>
-                <option value="dotnet-wcf">.NET Framework 4.8 (WCF)</option>
+                <option value="typescript">Hybrid Connection (Node.js) - Beta</option>
+                <option value="dotnet-core">Hybrid Connection (.NET)</option>
+                <option value="dotnet-wcf">WCF (.NET Framework) - Legacy</option>
               </select>
             </label>
             <label>
@@ -248,7 +257,7 @@ function App() {
                 <div key={t.id} style={{ border: '1px solid #eee', padding: '15px', borderRadius: '4px', background: '#f9f9f9' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <strong>{t.name}</strong>
-                    <span style={{ fontSize: '0.8em', background: '#ddd', padding: '2px 6px', borderRadius: '4px' }}>{t.type}</span>
+                    <span style={{ fontSize: '0.8em', background: '#ddd', padding: '2px 6px', borderRadius: '4px' }}>{getTunnelTypeLabel(t.type)}</span>
                   </div>
                   <div style={{ fontSize: '0.9em', color: '#666', marginTop: '5px' }}>
                     {t.relayNamespace} / {t.hybridConnectionName} → {t.targetHost}:{t.targetPort}
