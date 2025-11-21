@@ -1,6 +1,6 @@
 import { RelayAPI } from '@azure/arm-relay'
 import { DefaultAzureCredential, ClientSecretCredential } from '@azure/identity'
-import type { AzureManagementConfig, RelayConfig } from './config'
+import type { AzureManagementConfig, RelayConfig } from './config.js'
 import { Logger } from 'pino'
 
 export class RelayResourceManager {

@@ -1,10 +1,14 @@
+import { Readable } from 'stream'
 import { Logger } from 'pino'
-import type { RelayConfig } from './config'
-import type { RelayResourceManager } from './relay-resource-manager'
+import type { RelayConfig } from './config.js'
+import type { RelayResourceManager } from './relay-resource-manager.js'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
 
 const https = require('hyco-https')
 const WebSocket = require('hyco-ws')
-const fetch = require('node-fetch')
+// const fetch = require('node-fetch') // using global fetch
 
 export class DispatcherService {
   private httpServer?: any
@@ -152,7 +156,8 @@ export class DispatcherService {
       res.writeHead(response.status, response.statusText, responseHeaders)
       
       if (response.body) {
-        response.body.pipe(res)
+        // @ts-ignore
+        Readable.fromWeb(response.body).pipe(res)
       } else {
         res.end()
       }

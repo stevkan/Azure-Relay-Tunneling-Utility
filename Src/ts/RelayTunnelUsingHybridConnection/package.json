@@ -1,22 +1,23 @@
 {
   "name": "azure-relay-tunnel-ts",
   "version": "0.9.0-beta.4",
+  "type": "module",
   "description": "Azure Relay Hybrid Connection Tunneling Utility (TypeScript/Node.js)",
   "main": "dist/index.js",
   "bin": {
-    "relay-tunnel": "./dist/index.js"
+    "relay-tunnel": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc && copy .env.template dist\\.env.template",
     "build:release": "tsc",
-    "start": "node dist/index.js",
-    "start:dev": "tsx src/index.ts",
-    "dev": "tsx --watch src/index.ts",
-    "package:win": "npm run build:release && pkg dist/index.js --targets node20-win-x64 --output bin/win/RelayTunnelUsingHybridConnection.exe && node build.js && copy .env.template bin\\win\\.env.template",
-    "package:linux": "npm run build:release && pkg dist/index.js --targets node20-linux-x64 --output bin/linux/RelayTunnelUsingHybridConnection-linux && copy .env.template bin\\linux\\.env.template",
-    "package:macos": "npm run build:release && pkg dist/index.js --targets node20-macos-x64 --output bin/macos/RelayTunnelUsingHybridConnection-macos && copy .env.template bin\\macos\\.env.template",
+    "start": "node dist/cli.js",
+    "start:dev": "tsx src/cli.ts",
+    "dev": "tsx --watch src/cli.ts",
+    "package:win": "npm run build:release && pkg dist/cli.js --targets node20-win-x64 --output bin/win/RelayTunnelUsingHybridConnection.exe && node build.js && copy .env.template bin\\win\\.env.template",
+    "package:linux": "npm run build:release && pkg dist/cli.js --targets node20-linux-x64 --output bin/linux/RelayTunnelUsingHybridConnection-linux && copy .env.template bin\\linux\\.env.template",
+    "package:macos": "npm run build:release && pkg dist/cli.js --targets node20-macos-x64 --output bin/macos/RelayTunnelUsingHybridConnection-macos && copy .env.template bin\\macos\\.env.template",
     "package:all": "npm run package:win && npm run package:linux && npm run package:macos",
-    "test": "node --test --test-reporter=spec --import tsx test/config.test.ts test/relay-resource-manager.test.ts test/dispatcher-service.test.ts"
+    "test": "node --test --test-reporter=spec --import tsx test/config.test.ts test/relay-resource-manager.test.ts test/dispatcher-service.test.ts test/config-service.test.ts"
   },
   "keywords": [
     "azure",
@@ -31,17 +32,21 @@
   "dependencies": {
     "@azure/arm-relay": "^3.1.0",
     "@azure/identity": "^4.5.0",
+    "@inquirer/prompts": "^8.0.1",
+    "@primno/dpapi": "^2.0.1",
     "dotenv": "^16.4.7",
     "hyco-https": "^1.4.5",
     "hyco-ws": "^1.0.5",
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
+    "uuid": "^13.0.0",
     "ws": "^8.18.0",
     "yargs": "^17.7.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "@types/uuid": "^10.0.0",
     "@types/ws": "^8.5.13",
     "@types/yargs": "^17.0.33",
     "@yao-pkg/pkg": "^5.15.0",
