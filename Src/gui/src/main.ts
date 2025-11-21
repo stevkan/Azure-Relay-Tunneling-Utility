@@ -3,6 +3,7 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { ConfigService } from '@shared/services/ConfigService';
 import { AppConfig } from '@shared/types/Configuration';
+import { TunnelManager } from './TunnelManager';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -10,6 +11,7 @@ if (started) {
 }
 
 const configService = new ConfigService();
+const tunnelManager = new TunnelManager(configService);
 
 const createWindow = () => {
   // Create the browser window.
@@ -60,6 +62,20 @@ ipcMain.handle('decrypt-key', (event, encryptedKey: string) => {
     console.error("Decryption failed:", e);
     throw e;
   }
+});
+
+ipcMain.handle('start-tunnel', async (event, id: string) => {
+  await tunnelManager.startTunnel(id);
+  return true;
+});
+
+ipcMain.handle('stop-tunnel', async (event, id: string) => {
+  await tunnelManager.stopTunnel(id);
+  return true;
+});
+
+ipcMain.handle('get-tunnel-status', (event, id: string) => {
+  return tunnelManager.getStatus(id);
 });
 
 // This method will be called when Electron has finished

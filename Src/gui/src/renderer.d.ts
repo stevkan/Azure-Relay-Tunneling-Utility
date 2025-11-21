@@ -5,6 +5,9 @@ export interface IElectronAPI {
   saveConfig: (config: AppConfig) => Promise<boolean>;
   encryptKey: (key: string) => Promise<string>;
   decryptKey: (encryptedKey: string) => Promise<string>;
+  startTunnel: (id: string) => Promise<boolean>;
+  stopTunnel: (id: string) => Promise<boolean>;
+  getTunnelStatus: (id: string) => Promise<'running' | 'stopped' | 'error'>;
 }
 
 declare global {

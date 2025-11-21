@@ -7,13 +7,44 @@ function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingTunnel, setEditingTunnel] = useState<Partial<TunnelConfig>>({});
 
+  const [tunnelStatuses, setTunnelStatuses] = useState<Record<string, string>>({});
+
   useEffect(() => {
     loadConfig();
+    const interval = setInterval(updateStatuses, 2000);
+    return () => clearInterval(interval);
   }, []);
+
+  const updateStatuses = async () => {
+    if (!config) return;
+    const statuses: Record<string, string> = {};
+    for (const t of config.tunnels) {
+      statuses[t.id] = await window.electronAPI.getTunnelStatus(t.id);
+    }
+    setTunnelStatuses(statuses);
+  };
 
   const loadConfig = async () => {
     const cfg = await window.electronAPI.getConfig();
     setConfig(cfg);
+    // Initial status check
+    if (cfg) {
+      const statuses: Record<string, string> = {};
+      for (const t of cfg.tunnels) {
+        statuses[t.id] = await window.electronAPI.getTunnelStatus(t.id);
+      }
+      setTunnelStatuses(statuses);
+    }
+  };
+
+  const handleToggleTunnel = async (id: string) => {
+    const status = tunnelStatuses[id];
+    if (status === 'running') {
+      await window.electronAPI.stopTunnel(id);
+    } else {
+      await window.electronAPI.startTunnel(id);
+    }
+    updateStatuses();
   };
 
   const handleSave = async () => {
@@ -134,8 +165,10 @@ function App() {
                     {t.relayNamespace} / {t.hybridConnectionName} → {t.targetHost}:{t.targetPort}
                   </div>
                   <div style={{ marginTop: '10px' }}>
-                    <button onClick={() => { setEditingTunnel(t); setIsEditing(true); }}>Edit</button>
-                    {/* Run/Stop buttons will come later */}
+                    <button onClick={() => handleToggleTunnel(t.id)} style={{ marginRight: '10px', padding: '5px 10px', background: tunnelStatuses[t.id] === 'running' ? '#d9534f' : '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                        {tunnelStatuses[t.id] === 'running' ? 'Stop' : 'Start'}
+                    </button>
+                    <button onClick={() => { setEditingTunnel(t); setIsEditing(true); }} style={{ padding: '5px 10px', cursor: 'pointer' }} disabled={tunnelStatuses[t.id] === 'running'}>Edit</button>
                   </div>
                 </div>
               ))}

@@ -8,4 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveConfig: (config: any) => ipcRenderer.invoke('save-config', config),
   encryptKey: (key: string) => ipcRenderer.invoke('encrypt-key', key),
   decryptKey: (encryptedKey: string) => ipcRenderer.invoke('decrypt-key', encryptedKey),
+  startTunnel: (id: string) => ipcRenderer.invoke('start-tunnel', id),
+  stopTunnel: (id: string) => ipcRenderer.invoke('stop-tunnel', id),
+  getTunnelStatus: (id: string) => ipcRenderer.invoke('get-tunnel-status', id),
 });
