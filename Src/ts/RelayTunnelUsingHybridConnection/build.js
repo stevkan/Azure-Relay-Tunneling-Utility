@@ -5,7 +5,7 @@ const path = require("path");
 
 // Configuration
 const exePath = "bin/win/RelayTunnelUsingHybridConnection.exe";
-const outputPath = "bin/win/RelayTunnelUsingHybridConnection-win.exe";
+const outputPath = "bin/win/RelayTunnelUsingHybridConnection.exe";
 const iconPath = "AzureRelayTunnelUtilityIcon.ico";
 
 // Read version from package.json
@@ -146,12 +146,12 @@ try {
 console.log(`Writing to: ${outputPath}`);
 try {
   fs.writeFileSync(outputPath, Buffer.from(newBinary));
-  fs.rm(exePath, { force: true }, (err) => {
-    if (err) {
-      console.error(`ERROR: Failed to remove temporary executable: ${err.message}`);
-      process.exit(1);
-    }
-  });
+  // fs.rm(exePath, { force: true }, (err) => {
+  //   if (err) {
+  //     console.error(`ERROR: Failed to remove temporary executable: ${err.message}`);
+  //     process.exit(1);
+  //   }
+  // });
 } catch (error) {
   console.error(`ERROR: Failed to write executable: ${error.message}`);
   process.exit(1);
