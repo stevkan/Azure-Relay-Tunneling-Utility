@@ -23,7 +23,7 @@ title: Downloads
 ### Linux & macOS Users
 Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS users can build from source.
 
-👉 **[View Build Instructions for Linux/macOS](../Src/dotnet/RelayTunnelUsingHybridConnection/README.md#building-from-source)**
+👉 **[View Build Instructions for Linux/macOS](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/blob/main/Src/dotnet/RelayTunnelUsingHybridConnection/README.md#-publishing-executable)**
 
 ### Quick Start
 1. Download the appropriate zip for your platform
@@ -50,7 +50,7 @@ Official releases currently provide pre-built binaries for **Windows only**. Lin
 ### Linux & macOS Users
 Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS users can build from source.
 
-👉 **[View Build Instructions for Linux/macOS](../Src/ts/RelayTunnelUsingHybridConnection/README.md#build-executable)**
+👉 **[View Build Instructions for Linux/macOS](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/blob/main/Src/ts/RelayTunnelUsingHybridConnection/README.md#-installation)**
 
 ### Quick Start
 1. Download the appropriate zip for your platform
