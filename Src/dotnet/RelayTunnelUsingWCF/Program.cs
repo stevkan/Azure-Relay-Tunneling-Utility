@@ -18,26 +18,36 @@ namespace RelayTunnelUsingWCF
         static void Main(string[] args)
         {
             var configService = new ConfigService();
+            string targetTunnelId = null;
 
-            if (args.Length > 0 && args[0] == "config")
+            // Handle CLI args
+            for (int i = 0; i < args.Length; i++)
             {
-                if (args.Length > 1 && args[1] == "edit")
+                if (args[i] == "--tunnel-id" && i + 1 < args.Length)
                 {
-                    var path = configService.GetConfigPath();
-                    Console.WriteLine($"Opening config file: {path}");
-                    if (!File.Exists(path))
-                    {
-                        configService.SaveConfig(new AppConfig());
-                    }
-                    Process.Start(path);
-                    return;
+                    targetTunnelId = args[i + 1];
                 }
-                if (args.Length > 1 && args[1] == "show")
+                else if (args[i] == "config")
                 {
-                    var cfg = configService.LoadConfig();
-                    Console.WriteLine($"Configuration file: {configService.GetConfigPath()}");
-                    Console.WriteLine(JsonConvert.SerializeObject(cfg, Formatting.Indented));
-                    return;
+                    // Handle config commands...
+                    if (i + 1 < args.Length && args[i + 1] == "edit")
+                    {
+                        var path = configService.GetConfigPath();
+                        Console.WriteLine($"Opening config file: {path}");
+                        if (!File.Exists(path))
+                        {
+                            configService.SaveConfig(new AppConfig());
+                        }
+                        Process.Start(path);
+                        return;
+                    }
+                    if (i + 1 < args.Length && args[i + 1] == "show")
+                    {
+                        var cfg = configService.LoadConfig();
+                        Console.WriteLine($"Configuration file: {configService.GetConfigPath()}");
+                        Console.WriteLine(JsonConvert.SerializeObject(cfg, Formatting.Indented));
+                        return;
+                    }
                 }
             }
 
@@ -48,6 +58,17 @@ namespace RelayTunnelUsingWCF
             {
                 var appConfig = configService.LoadConfig();
                 var myTunnels = appConfig.Tunnels.Where(t => t.Type == "dotnet-wcf").ToList();
+
+                // Filter by ID if provided
+                if (!string.IsNullOrEmpty(targetTunnelId))
+                {
+                    myTunnels = myTunnels.Where(t => t.Id == targetTunnelId).ToList();
+                    if (myTunnels.Count == 0)
+                    {
+                        Console.WriteLine($"❌ Tunnel with ID '{targetTunnelId}' not found or is not of type 'dotnet-wcf'.");
+                        return;
+                    }
+                }
 
                 if (appConfig.Tunnels.Count == 0)
                 {
