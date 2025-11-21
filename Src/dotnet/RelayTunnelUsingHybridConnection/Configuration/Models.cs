@@ -41,5 +41,50 @@ namespace RelayTunnelUsingHybridConnection.Configuration
 
         [JsonPropertyName("targetPort")]
         public int TargetPort { get; set; }
+
+        [JsonPropertyName("enableDetailedLogging")]
+        public bool? EnableDetailedLogging { get; set; }
+
+        [JsonPropertyName("dynamicResourceCreation")]
+        public bool? DynamicResourceCreation { get; set; }
+
+        [JsonPropertyName("resourceGroupName")]
+        public string ResourceGroupName { get; set; }
+
+        [JsonPropertyName("requiresClientAuthorization")]
+        public bool? RequiresClientAuthorization { get; set; }
+
+        [JsonPropertyName("description")]
+        public string Description { get; set; }
+
+        [JsonPropertyName("enableWebSocketSupport")]
+        public bool? EnableWebSocketSupport { get; set; }
+
+        [JsonPropertyName("targetWebSocketAddress")]
+        public string TargetWebSocketAddress { get; set; }
+
+        [JsonPropertyName("serviceDiscoveryMode")]
+        public string ServiceDiscoveryMode { get; set; }
+
+        [JsonPropertyName("azureManagement")]
+        public AzureManagementConfig AzureManagement { get; set; }
+    }
+
+    public class AzureManagementConfig
+    {
+        [JsonPropertyName("subscriptionId")]
+        public string SubscriptionId { get; set; }
+
+        [JsonPropertyName("tenantId")]
+        public string TenantId { get; set; }
+
+        [JsonPropertyName("clientId")]
+        public string ClientId { get; set; }
+
+        [JsonPropertyName("clientSecret")]
+        public string ClientSecret { get; set; }
+
+        [JsonPropertyName("useDefaultAzureCredential")]
+        public bool? UseDefaultAzureCredential { get; set; }
     }
 }

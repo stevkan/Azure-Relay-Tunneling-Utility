@@ -150,6 +150,83 @@ function App() {
                 </label>
             </div>
 
+            <label>
+              Description:
+              <input style={{width: '100%'}} value={editingTunnel.description || ''} onChange={e => setEditingTunnel({...editingTunnel, description: e.target.value})} />
+            </label>
+            <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              <input type="checkbox" checked={editingTunnel.enableDetailedLogging || false} onChange={e => setEditingTunnel({...editingTunnel, enableDetailedLogging: e.target.checked})} />
+              Detailed Logging
+            </label>
+            <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              <input type="checkbox" checked={editingTunnel.requiresClientAuthorization || false} onChange={e => setEditingTunnel({...editingTunnel, requiresClientAuthorization: e.target.checked})} />
+              Requires Client Authorization
+            </label>
+
+            {editingTunnel.type === 'dotnet-core' && (
+                <>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                      <input type="checkbox" checked={editingTunnel.enableWebSocketSupport || false} onChange={e => setEditingTunnel({...editingTunnel, enableWebSocketSupport: e.target.checked})} />
+                      Enable WebSocket Support
+                    </label>
+                    {editingTunnel.enableWebSocketSupport && (
+                        <label>
+                            Target WebSocket Address:
+                            <input style={{width: '100%'}} value={editingTunnel.targetWebSocketAddress || ''} onChange={e => setEditingTunnel({...editingTunnel, targetWebSocketAddress: e.target.value})} />
+                        </label>
+                    )}
+                </>
+            )}
+
+            {editingTunnel.type === 'dotnet-wcf' && (
+                <label>
+                    Service Discovery Mode:
+                    <select style={{width: '100%'}} value={editingTunnel.serviceDiscoveryMode || 'Private'} onChange={e => setEditingTunnel({...editingTunnel, serviceDiscoveryMode: e.target.value as any})}>
+                        <option value="Private">Private</option>
+                        <option value="Public">Public</option>
+                    </select>
+                </label>
+            )}
+
+            <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              <input type="checkbox" checked={editingTunnel.dynamicResourceCreation || false} onChange={e => setEditingTunnel({...editingTunnel, dynamicResourceCreation: e.target.checked})} />
+              Dynamic Resource Creation
+            </label>
+
+            {editingTunnel.dynamicResourceCreation && (
+                <div style={{border: '1px dashed #999', padding: '10px', borderRadius: '4px', background: '#f0f0f0'}}>
+                    <h4 style={{marginTop: 0}}>Azure Management</h4>
+                    <label>
+                        Resource Group Name:
+                        <input style={{width: '100%'}} value={editingTunnel.resourceGroupName || ''} onChange={e => setEditingTunnel({...editingTunnel, resourceGroupName: e.target.value})} />
+                    </label>
+                    <label>
+                        Azure Subscription ID:
+                        <input style={{width: '100%'}} value={editingTunnel.azureManagement?.subscriptionId || ''} onChange={e => setEditingTunnel({...editingTunnel, azureManagement: {...(editingTunnel.azureManagement || {}), subscriptionId: e.target.value}})} />
+                    </label>
+                    <label>
+                        Azure Tenant ID:
+                        <input style={{width: '100%'}} value={editingTunnel.azureManagement?.tenantId || ''} onChange={e => setEditingTunnel({...editingTunnel, azureManagement: {...(editingTunnel.azureManagement || {}), tenantId: e.target.value}})} />
+                    </label>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0'}}>
+                        <input type="checkbox" checked={editingTunnel.azureManagement?.useDefaultAzureCredential ?? true} onChange={e => setEditingTunnel({...editingTunnel, azureManagement: {...(editingTunnel.azureManagement || {}), useDefaultAzureCredential: e.target.checked}})} />
+                        Use Default Azure Credential
+                    </label>
+                    {!(editingTunnel.azureManagement?.useDefaultAzureCredential ?? true) && (
+                        <>
+                            <label>
+                                Client ID:
+                                <input style={{width: '100%'}} value={editingTunnel.azureManagement?.clientId || ''} onChange={e => setEditingTunnel({...editingTunnel, azureManagement: {...(editingTunnel.azureManagement || {}), clientId: e.target.value}})} />
+                            </label>
+                            <label>
+                                Client Secret:
+                                <input style={{width: '100%'}} type="password" value={editingTunnel.azureManagement?.clientSecret || ''} onChange={e => setEditingTunnel({...editingTunnel, azureManagement: {...(editingTunnel.azureManagement || {}), clientSecret: e.target.value}})} />
+                            </label>
+                        </>
+                    )}
+                </div>
+            )}
+
             <div style={{ marginTop: '10px' }}>
                 <button onClick={handleSaveTunnel} style={{ marginRight: '10px', padding: '5px 10px' }}>Save</button>
                 <button onClick={() => setIsEditing(false)} style={{ padding: '5px 10px' }}>Cancel</button>
