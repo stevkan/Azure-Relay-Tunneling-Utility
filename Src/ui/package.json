@@ -1,6 +1,6 @@
 {
-  "name": "gui",
-  "productName": "gui",
+  "name": "azure-relay-tunneling-ui",
+  "productName": "Azure Relay Tunneling Utility",
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",

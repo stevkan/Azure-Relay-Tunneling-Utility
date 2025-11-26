@@ -134,7 +134,12 @@ namespace RelayTunnelUsingHybridConnection
                         PolicyKey = key,
                         TargetServiceAddress = $"http://{t.TargetHost}:{t.TargetPort}/",
                         IsEnabled = true,
-                        DynamicResourceCreation = false // Not supported in simple config yet
+                        DynamicResourceCreation = t.DynamicResourceCreation.GetValueOrDefault(false),
+                        ResourceGroupName = t.ResourceGroupName,
+                        Description = t.Description,
+                        RequiresClientAuthorization = t.RequiresClientAuthorization.GetValueOrDefault(true),
+                        EnableWebSocketSupport = t.EnableWebSocketSupport.GetValueOrDefault(true),
+                        TargetWebSocketAddress = t.TargetWebSocketAddress
                     });
                 }
                 catch (Exception ex)
@@ -144,10 +149,40 @@ namespace RelayTunnelUsingHybridConnection
             }
 
             // Start services
-            var dispatcherServices = relayConfigs.Select(cfg =>
+            // Need to zip myTunnels with relayConfigs to keep access to original tunnel config for AzureManagement
+            var tunnelsAndConfigs = myTunnels.Zip(relayConfigs, (tunnel, config) => new { Tunnel = tunnel, Config = config }).ToList();
+
+            var dispatcherServices = tunnelsAndConfigs.Select(pair =>
             {
-                // Passing null for ResourceManager as dynamic creation is not yet supported in this path
-                return new DispatcherService(cfg, null);
+                var cfg = pair.Config;
+                var tunnel = pair.Tunnel;
+                RelayResourceManager resourceManager = null;
+
+                // Initialize ResourceManager if dynamic resource creation is enabled
+                if (cfg.DynamicResourceCreation)
+                {
+                    // Prioritize the tunnel-specific Azure Management configuration if available
+                    var azureConfig = tunnel.AzureManagement ?? appConfig.AzureManagement;
+                    
+                    if (azureConfig == null)
+                    {
+                        Console.WriteLine($"⚠️ DynamicResourceCreation is enabled for '{cfg.RelayName}', but AzureManagement configuration is missing.");
+                        // We can't create resources without config, but we can try to connect anyway if it exists
+                    }
+                    else
+                    {
+                        try
+                        {
+                            resourceManager = new RelayResourceManager(azureConfig);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"❌ Failed to initialize Azure Relay Resource Manager: {ex.Message}");
+                        }
+                    }
+                }
+
+                return new DispatcherService(cfg, resourceManager);
             }).ToList();
 
             var openTasks = dispatcherServices.Select(ds => ds.OpenAsync(CancellationToken.None)).ToList();

@@ -9,6 +9,9 @@ namespace RelayTunnelUsingHybridConnection.Configuration
         [JsonPropertyName("version")]
         public int Version { get; set; } = 1;
 
+        [JsonPropertyName("azureManagement")]
+        public AzureManagementConfig AzureManagement { get; set; }
+
         [JsonPropertyName("tunnels")]
         public List<TunnelConfig> Tunnels { get; set; } = new List<TunnelConfig>();
     }

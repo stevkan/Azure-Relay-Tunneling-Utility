@@ -1,6 +1,7 @@
 import { DispatcherService } from '@shared/dispatcher-service';
 import { ConfigService } from '@shared/services/ConfigService';
 import { AppConfig, TunnelConfig } from '@shared/types/Configuration';
+import { RelayResourceManager } from '@shared/relay-resource-manager';
 import { ChildProcess, spawn } from 'child_process';
 import path from 'path';
 import { SimpleLogger } from '@shared/simple-logger';
@@ -72,6 +73,22 @@ export class TunnelManager {
     const logger = new SimpleLogger('debug');
     const policyKey = this.configService.decryptKey(tunnel.encryptedKey);
     
+    let resourceManager: RelayResourceManager | null = null;
+
+    if (tunnel.dynamicResourceCreation) {
+        if (!tunnel.azureManagement) {
+             throw new Error('Azure Management configuration is required for dynamic resource creation');
+        }
+        
+        // Ensure defaults are applied if values are missing (e.g. useDefaultAzureCredential)
+        const azureConfig = {
+            ...tunnel.azureManagement,
+            useDefaultAzureCredential: tunnel.azureManagement.useDefaultAzureCredential ?? true
+        };
+
+        resourceManager = new RelayResourceManager(azureConfig, logger);
+    }
+
     const relayConfig = {
         relayNamespace: tunnel.relayNamespace,
         relayName: tunnel.hybridConnectionName,
@@ -79,12 +96,14 @@ export class TunnelManager {
         policyKey: policyKey,
         targetServiceAddress: `http://${tunnel.targetHost}:${tunnel.targetPort}/`,
         isEnabled: true,
-        enableDetailedLogging: true,
-        dynamicResourceCreation: false,
-        requiresClientAuthorization: false
+        enableDetailedLogging: tunnel.enableDetailedLogging ?? true,
+        dynamicResourceCreation: tunnel.dynamicResourceCreation ?? false,
+        resourceGroupName: tunnel.resourceGroupName,
+        requiresClientAuthorization: tunnel.requiresClientAuthorization ?? true,
+        description: tunnel.description
     };
 
-    const dispatcher = new DispatcherService(relayConfig as any, null, logger);
+    const dispatcher = new DispatcherService(relayConfig as any, resourceManager, logger);
     const abortController = new AbortController();
     
     await dispatcher.openAsync(abortController.signal);
@@ -107,7 +126,7 @@ export class TunnelManager {
 
   private async startDotNetCoreTunnel(tunnel: TunnelConfig) {
     const exePath = this.getBinaryPath(
-        '../../../../../Src/dotnet/RelayTunnelUsingHybridConnection/bin/Debug/net8.0/', 
+        '../../../../Src/dotnet/RelayTunnelUsingHybridConnection/bin/Debug/net8.0/', 
         'RelayTunnelUsingHybridConnection.exe'
     );
     
@@ -125,7 +144,7 @@ export class TunnelManager {
 
   private async startDotNetWcfTunnel(tunnel: TunnelConfig) {
     const exePath = this.getBinaryPath(
-        '../../../../../Src/dotnet/RelayTunnelUsingWCF/bin/Debug/',
+        '../../../../Src/dotnet/RelayTunnelUsingWCF/bin/Debug/',
         'RelayTunnelUsingWCF.exe'
     );
     

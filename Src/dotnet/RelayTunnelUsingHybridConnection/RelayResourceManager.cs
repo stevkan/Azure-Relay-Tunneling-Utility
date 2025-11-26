@@ -5,6 +5,7 @@ using Azure.Identity;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Relay;
 using Azure.ResourceManager.Relay.Models;
+using RelayTunnelUsingHybridConnection.Configuration;
 
 namespace RelayTunnelUsingHybridConnection
 {
@@ -18,7 +19,7 @@ namespace RelayTunnelUsingHybridConnection
             _subscriptionId = config.SubscriptionId;
 
             // Choose authentication method
-            if (config.UseDefaultAzureCredential)
+            if (config.UseDefaultAzureCredential.GetValueOrDefault(true))
             {
                 _armClient = new ArmClient(new DefaultAzureCredential());
             }
