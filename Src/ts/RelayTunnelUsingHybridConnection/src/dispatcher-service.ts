@@ -146,7 +146,9 @@ export class DispatcherService {
 
       const responseHeaders: any = {}
       response.headers.forEach((value: string, name: string) => {
-        responseHeaders[name] = value
+        if (!['content-length', 'content-encoding', 'transfer-encoding'].includes(name.toLowerCase())) {
+          responseHeaders[name] = value
+        }
       })
 
       res.writeHead(response.status, response.statusText, responseHeaders)
