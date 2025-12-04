@@ -27,12 +27,28 @@ on:
         description: 'Previous TypeScript version for changelog (e.g., 0.9.0-beta.4)'
         required: true
         type: string
+      skip_hybrid_build:
+        description: 'Skip Hybrid Connection (.NET 8) build'
+        required: false
+        type: boolean
+        default: false
+      skip_wcf_build:
+        description: 'Skip WCF Relay build'
+        required: false
+        type: boolean
+        default: false
+      skip_ts_build:
+        description: 'Skip TypeScript build'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
   build-hybrid:
+    if: ${{ inputs.skip_hybrid_build != true }}
     runs-on: windows-latest
     
     steps:
@@ -78,6 +94,7 @@ jobs:
           path: RelayTunnel-HC-NET-v${{ inputs.hybrid_version }}-Win-x64.zip
 
   build-wcf:
+    if: ${{ inputs.skip_wcf_build != true }}
     runs-on: windows-latest
     
     steps:
@@ -109,6 +126,7 @@ jobs:
         continue-on-error: false
 
   build-ts:
+    if: ${{ inputs.skip_ts_build != true }}
     runs-on: windows-latest
     
     steps:
@@ -146,6 +164,7 @@ jobs:
 
   release:
     needs: [build-hybrid, build-wcf, build-ts]
+    if: ${{ always() && !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     
     steps:
@@ -154,7 +173,11 @@ jobs:
         with:
           fetch-depth: 0
       
+      - name: Create artifacts directory
+        run: mkdir -p artifacts
+      
       - name: Download hybrid artifact
+        if: ${{ inputs.skip_hybrid_build != true }}
         uses: actions/download-artifact@v4
         with:
           name: hybrid-release
@@ -195,15 +218,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Determine prerelease status
-        id: prerelease
-        run: |
-          if [[ "${{ inputs.ts_version }}" == *"beta"* ]] || [[ "${{ inputs.ts_version }}" == *"alpha"* ]] || [[ "${{ inputs.ts_version }}" == *"rc"* ]]; then
-            echo "IS_PRERELEASE=true" >> $GITHUB_OUTPUT
-          else
-            echo "IS_PRERELEASE=false" >> $GITHUB_OUTPUT
-          fi
-      
       - name: Generate release notes
         id: release_notes
         run: |
@@ -232,9 +246,9 @@ jobs:
           <summary><h3><b>Azure Relay Hybrid Connections (.NET 8)</b></h3> - <h4>vHYBRID_VERSION (stable)</h4></summary>
 
           <b>Platform Support:</b>
-          - Windows
-          - Linux
-          - macOS
+          - Windows (Executable/ZIP, Source Code)
+          - Linux (Source Code)
+          - macOS (Source Code)
 
           Download the executable/zip/source code below, extract, rename `appsettings-template.json` to `appsettings.json`, and configure.
 
@@ -256,7 +270,7 @@ jobs:
           ⚠️ <b>Security Warning:</b> Uses deprecated Azure libraries. Use Hybrid Connection version for production.
 
           <b>Platform Support:</b>
-          - Windows
+          - Windows (Source Code Only)
 
           Download the source code below, rename `appsettings-template.json` to `appsettings.json`, and configure.
 
@@ -284,9 +298,9 @@ jobs:
           - **For production DirectLine/Web Chat use, please use the .NET version**
 
           <b>Platform Support:</b>
-          - Windows
-          - Linux
-          - macOS
+          - Windows (Source Code Only)
+          - Linux (Source Code Only)
+          - macOS (Source Code Only)
 
           Download the source code below, rename `.env.template` to `.env`, and configure.
 
@@ -329,6 +343,6 @@ jobs:
           body_path: release_notes.md
           files: artifacts/*.zip
           draft: false
-          prerelease: ${{ steps.prerelease.outputs.IS_PRERELEASE }}
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
