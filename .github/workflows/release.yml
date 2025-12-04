@@ -1,29 +1,45 @@
-name: Release - Hybrid Connection
+name: Release - Azure Relay Tunnel Utility
 
 on:
-  push:
-    tags:
-      - 'hybrid-v*'  # Triggers on tags like hybrid-v1.5.2, hybrid-v2.0.0, etc.
+  workflow_dispatch:
+    inputs:
+      hybrid_version:
+        description: 'Hybrid Connection (.NET 8) version (e.g., 1.6.3)'
+        required: true
+        type: string
+      hybrid_prev_version:
+        description: 'Previous Hybrid version for changelog (e.g., 1.6.2)'
+        required: true
+        type: string
+      wcf_version:
+        description: 'WCF Relay version (e.g., 1.5.7)'
+        required: true
+        type: string
+      wcf_prev_version:
+        description: 'Previous WCF version for changelog (e.g., 1.5.6)'
+        required: true
+        type: string
+      ts_version:
+        description: 'TypeScript version (e.g., 0.9.0-beta.5)'
+        required: true
+        type: string
+      ts_prev_version:
+        description: 'Previous TypeScript version for changelog (e.g., 0.9.0-beta.4)'
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            platform: Win-x64
-            rid: win-x64
-    
-    runs-on: ${{ matrix.os }}
+  build-hybrid:
+    runs-on: windows-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for release notes
+          fetch-depth: 0
       
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -37,7 +53,7 @@ jobs:
         run: dotnet build Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --no-restore
       
       - name: Publish project
-        run: dotnet publish Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained false --output ./publish
+        run: dotnet publish Src/dotnet/RelayTunnelUsingHybridConnection/RelayTunnelUsingHybridConnection.csproj --configuration Release --runtime win-x64 --self-contained false --output ./publish
       
       - name: Install Gitleaks (Secret Scanner)
         run: |
@@ -49,29 +65,87 @@ jobs:
           ./gitleaks/gitleaks.exe detect --source ./publish --verbose --no-git
         continue-on-error: false
       
-      - name: Get version from tag
-        id: get_version
-        run: |
-          tag="${{ github.ref_name }}"
-          version="${tag#hybrid-v}"
-          echo "VERSION=v$version" >> $GITHUB_OUTPUT
-          echo "TAG=$tag" >> $GITHUB_OUTPUT
-        shell: bash
-      
       - name: Create ZIP archive
         run: |
-          $version = "${{ steps.get_version.outputs.VERSION }}"
-          Compress-Archive -Path ./publish/* -DestinationPath "RelayTunnel-HC-NET-$version-${{ matrix.platform }}.zip"
+          $version = "v${{ inputs.hybrid_version }}"
+          Compress-Archive -Path ./publish/* -DestinationPath "RelayTunnel-HC-NET-$version-Win-x64.zip"
         shell: pwsh
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-${{ matrix.platform }}
-          path: RelayTunnel-HC-NET-${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip
-  
+          name: hybrid-release
+          path: RelayTunnel-HC-NET-v${{ inputs.hybrid_version }}-Win-x64.zip
+
+  build-wcf:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+      
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+      
+      - name: Restore NuGet packages
+        run: nuget restore Src/dotnet/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj -PackagesDirectory Src/dotnet/packages
+      
+      - name: Build project
+        run: msbuild Src/dotnet/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj /p:Configuration=Release /p:OutputPath=..\..\..\publish-wcf
+      
+      - name: Install Gitleaks (Secret Scanner)
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_windows_x64.zip" -OutFile gitleaks.zip
+          Expand-Archive -Path gitleaks.zip -DestinationPath ./gitleaks
+          
+      - name: Scan for secrets in build output
+        run: |
+          ./gitleaks/gitleaks.exe detect --source ./publish-wcf --verbose --no-git
+        continue-on-error: false
+
+  build-ts:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      
+      - name: Install dependencies
+        run: npm ci
+        working-directory: Src/ts/RelayTunnelUsingHybridConnection
+      
+      - name: Run tests
+        run: npm test
+        working-directory: Src/ts/RelayTunnelUsingHybridConnection
+      
+      - name: Build project
+        run: npm run build
+        working-directory: Src/ts/RelayTunnelUsingHybridConnection
+      
+      - name: Install Gitleaks (Secret Scanner)
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_windows_x64.zip" -OutFile gitleaks.zip
+          Expand-Archive -Path gitleaks.zip -DestinationPath ./gitleaks
+      
+      - name: Scan for secrets in build output
+        run: |
+          ./gitleaks/gitleaks.exe detect --source Src/ts/RelayTunnelUsingHybridConnection/dist --verbose --no-git
+        continue-on-error: false
+
   release:
-    needs: build
+    needs: [build-hybrid, build-wcf, build-ts]
     runs-on: ubuntu-latest
     
     steps:
@@ -80,47 +154,181 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Get version from tag
-        id: get_version
-        run: |
-          tag="${{ github.ref_name }}"
-          version="${tag#hybrid-v}"
-          echo "VERSION=v$version" >> $GITHUB_OUTPUT
-          echo "TAG=$tag" >> $GITHUB_OUTPUT
-        shell: bash
-      
-      - name: Download all artifacts
+      - name: Download hybrid artifact
         uses: actions/download-artifact@v4
         with:
+          name: hybrid-release
           path: artifacts
+      
+      - name: Create project-specific tags
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create tags for changelog compare links
+          git tag -a "hybrid-v${{ inputs.hybrid_version }}" -m "Hybrid Connection v${{ inputs.hybrid_version }}"
+          git tag -a "wcf-v${{ inputs.wcf_version }}" -m "WCF Relay v${{ inputs.wcf_version }}"
+          git tag -a "ts-v${{ inputs.ts_version }}" -m "TypeScript v${{ inputs.ts_version }}"
+          
+          git push origin "hybrid-v${{ inputs.hybrid_version }}"
+          git push origin "wcf-v${{ inputs.wcf_version }}"
+          git push origin "ts-v${{ inputs.ts_version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Fetch PRs merged since last release using GitHub API
+          CHANGELOG=$(gh api repos/${{ github.repository }}/pulls \
+            --jq '[.[] | select(.merged_at != null) | "* \(.title) by @\(.user.login) in \(.html_url)"] | join("\n")' \
+            -q 'state=closed&sort=updated&direction=desc&per_page=50' 2>/dev/null || echo "")
+          
+          if [ -z "$CHANGELOG" ]; then
+            # Fallback: use git log for commits
+            CHANGELOG=$(git log --oneline hybrid-v${{ inputs.hybrid_prev_version }}..HEAD --pretty=format:"* %s by @${{ github.actor }} in https://github.com/${{ github.repository }}/commit/%H" 2>/dev/null | head -20 || echo "* See commit history for changes")
+          fi
+          
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Determine prerelease status
+        id: prerelease
+        run: |
+          if [[ "${{ inputs.ts_version }}" == *"beta"* ]] || [[ "${{ inputs.ts_version }}" == *"alpha"* ]] || [[ "${{ inputs.ts_version }}" == *"rc"* ]]; then
+            echo "IS_PRERELEASE=true" >> $GITHUB_OUTPUT
+          else
+            echo "IS_PRERELEASE=false" >> $GITHUB_OUTPUT
+          fi
       
       - name: Generate release notes
         id: release_notes
         run: |
-          version="${{ steps.get_version.outputs.VERSION }}"
-          tag="${{ steps.get_version.outputs.TAG }}"
+          HYBRID_V="${{ inputs.hybrid_version }}"
+          HYBRID_PREV="${{ inputs.hybrid_prev_version }}"
+          WCF_V="${{ inputs.wcf_version }}"
+          WCF_PREV="${{ inputs.wcf_prev_version }}"
+          TS_V="${{ inputs.ts_version }}"
+          TS_PREV="${{ inputs.ts_prev_version }}"
+          REPO="${{ github.repository }}"
+          CHANGELOG="${{ steps.changelog.outputs.CHANGELOG }}"
           
-          notes="**Azure Relay Hybrid Connections (.NET 8)**\n\n"
-          notes+="**Platform Support:**\n"
-          notes+="- Windows (x64)\n\n"
-          notes+="Download the zip below, extract, rename \`appsettings-template.json\` to \`appsettings.json\`, and configure.\n\n"
-          notes+="📖 [Documentation](https://github.com/${{ github.repository }}/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection)\n\n"
-          notes+="<details>\n<summary>What's Changed</summary>\n\n"
-          notes+="See [full changelog](https://github.com/${{ github.repository }}/commits/$tag)\n\n"
-          notes+="</details>"
+          # Determine TS status label
+          if [[ "$TS_V" == *"beta"* ]]; then
+            TS_STATUS="beta"
+          elif [[ "$TS_V" == *"alpha"* ]]; then
+            TS_STATUS="alpha"
+          elif [[ "$TS_V" == *"rc"* ]]; then
+            TS_STATUS="rc"
+          else
+            TS_STATUS="stable"
+          fi
           
-          echo "NOTES<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$notes" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        shell: bash
+          cat << 'NOTES' > release_notes.md
+          <details>
+          <summary><h3><b>Azure Relay Hybrid Connections (.NET 8)</b></h3> - <h4>vHYBRID_VERSION (stable)</h4></summary>
+
+          <b>Platform Support:</b>
+          - Windows
+          - Linux
+          - macOS
+
+          Download the executable/zip/source code below, extract, rename `appsettings-template.json` to `appsettings.json`, and configure.
+
+          📖 [Documentation](https://github.com/REPO/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection)
+
+          <details>
+          <summary>What's Changed</summary>
+
+          CHANGELOG_PLACEHOLDER
+
+          See [full changelog](https://github.com/REPO/compare/hybrid-vHYBRID_PREV...hybrid-vHYBRID_VERSION)
+
+          </details>
+          </details>
+
+          <details>
+          <summary><h3><b>WCF Relay (.NET Framework 4.8)</b></h3> - <h4>vWCF_VERSION (legacy)</h4></summary>
+
+          ⚠️ <b>Security Warning:</b> Uses deprecated Azure libraries. Use Hybrid Connection version for production.
+
+          <b>Platform Support:</b>
+          - Windows
+
+          Download the source code below, rename `appsettings-template.json` to `appsettings.json`, and configure.
+
+          📖 [Documentation](https://github.com/REPO/tree/main/Src/dotnet/RelayTunnelUsingWCF)
+
+          <details>
+          <summary>What's Changed</summary>
+
+          CHANGELOG_PLACEHOLDER
+
+          See [full changelog](https://github.com/REPO/compare/wcf-vWCF_PREV...wcf-vWCF_VERSION)
+
+          </details>
+          </details>
+
+          <details>
+          <summary><h3><b>Azure Relay Hybrid Connections (TypeScript/Node.js)</b></h3> - <h4>vTS_VERSION (TS_STATUS)</h4></summary>
+
+          ⚠️ <b>BETA VERSION - Known Issues with DirectLine/Web Chat</b>
+
+          This TypeScript implementation has known issues when connecting to DirectLine clients:
+          - Messages may fail (502 Bad Gateway) or be delayed by several seconds
+          - Conversation update activities fail to be received
+          - WebSocket mode produces 502 errors even on successful messages (can be safely ignored)
+          - **For production DirectLine/Web Chat use, please use the .NET version**
+
+          <b>Platform Support:</b>
+          - Windows
+          - Linux
+          - macOS
+
+          Download the source code below, rename `.env.template` to `.env`, and configure.
+
+          📖 [Documentation](https://github.com/REPO/tree/main/Src/ts/RelayTunnelUsingHybridConnection)
+
+          <details>
+          <summary>What's Changed</summary>
+
+          CHANGELOG_PLACEHOLDER
+
+          See [full changelog](https://github.com/REPO/compare/ts-vTS_PREV...ts-vTS_VERSION)
+
+          </details>
+          </details>
+          NOTES
+          
+          # Replace placeholders
+          sed -i "s/HYBRID_VERSION/$HYBRID_V/g" release_notes.md
+          sed -i "s/HYBRID_PREV/$HYBRID_PREV/g" release_notes.md
+          sed -i "s/WCF_VERSION/$WCF_V/g" release_notes.md
+          sed -i "s/WCF_PREV/$WCF_PREV/g" release_notes.md
+          sed -i "s/TS_VERSION/$TS_V/g" release_notes.md
+          sed -i "s/TS_PREV/$TS_PREV/g" release_notes.md
+          sed -i "s/TS_STATUS/$TS_STATUS/g" release_notes.md
+          sed -i "s|REPO|$REPO|g" release_notes.md
+          
+          # Replace changelog placeholder with actual changelog
+          # Using awk to handle multiline replacement
+          awk -v changelog="$CHANGELOG" '{gsub(/CHANGELOG_PLACEHOLDER/, changelog); print}' release_notes.md > release_notes_final.md
+          mv release_notes_final.md release_notes.md
+          
+          echo "Generated release notes:"
+          cat release_notes.md
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/release-*/*.zip
-          body: ${{ steps.release_notes.outputs.NOTES }}
+          tag_name: v${{ inputs.hybrid_version }}-${{ inputs.wcf_version }}-${{ inputs.ts_version }}
+          name: "Azure Relay Tunnel Utility (${{ inputs.hybrid_version }}, ${{ inputs.wcf_version }}, ${{ inputs.ts_version }})"
+          body_path: release_notes.md
+          files: artifacts/*.zip
           draft: false
-          prerelease: false
-          name: "Relay Tunnel Using Hybrid Connection ${{ steps.get_version.outputs.VERSION }}"
+          prerelease: ${{ steps.prerelease.outputs.IS_PRERELEASE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
