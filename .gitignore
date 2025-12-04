@@ -20,3 +20,11 @@ Desktop.ini
 BUILD.md
 Src/ts/RelayTunnelUsingHybridConnection/Azure Relay Tunnel Utility (HC).aip
 /.github/copilot-instructions.md
+AGENTS.md
+
+# UI Artifacts (to prevent ghost files when switching branches)
+Src/ui/node_modules/
+Src/ui/.vite/
+Src/ui/out/
+Src/ui/.nyc_output/
+Src/ui/coverage/
