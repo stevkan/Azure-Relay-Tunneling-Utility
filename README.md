@@ -1,6 +1,6 @@
 # Azure Relay Tunneling Utility
 
-**Versions:** Hybrid Connection (.NET) v1.6.3 | Hybrid Connection (TypeScript) v0.9.0-beta.4 | WCF Relay v1.5.6 (.NET Framework)
+**Versions:** Hybrid Connection (.NET) v1.6.3 | Hybrid Connection (TypeScript) v0.9.0-beta.4 | WCF Relay v1.5.7 (.NET Framework)
 
 An HTTP tunneling utility based on Azure Relay. Forward HTTP traffic from Azure to your local machine for debugging and development.
 
@@ -17,7 +17,14 @@ This utility creates a secure tunnel between Azure and your local machine, allow
 
 This repository contains implementations in **.NET** and **TypeScript/Node.js** using different Azure Relay technologies.
 
-> **Note:** Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS users can easily build from source using the provided instructions.
+> **Note:** Official releases currently provide pre-built binaries for **Windows only** for the following projects:
+> - RelayTunnelUsingHybridConnection (.NET 8)
+
+> The following projects, while officially supported, require **building from source** and may include additional configuration or troubleshooting:
+> - RelayTunnelUsingWCF (.NET Framework 4.8) - Relies on deprecated Azure libraries; does not support all scenarios
+> - RelayTunnelUsingHybridConnection (TypeScript/Node.js) - Beta version with known issues for DirectLine/Web Chat scenarios
+
+> Linux and macOS users can build from source using the provided instructions. These builds are untested and are **not officially supported**.
 
 ### [RelayTunnelUsingHybridConnection](Src/dotnet/RelayTunnelUsingHybridConnection/README.md) ✅ **Recommended**
 **Technology:** Azure Relay Hybrid Connections (.NET 8)  
@@ -43,7 +50,7 @@ This repository contains implementations in **.NET** and **TypeScript/Node.js** 
 ### [RelayTunnelUsingWCF](Src/dotnet/RelayTunnelUsingWCF/README.md)
 **Technology:** WCF Relay (.NET Framework 4.8)  
 **Best For:** Legacy systems, existing WCF infrastructure  
-**Platform:** Windows only
+**Platform:** Windows only (build from source); Linux/macOS are not supported
 
 **Protocol Support:**
 - ✅ HTTP/REST (request/response patterns)
@@ -55,7 +62,9 @@ This repository contains implementations in **.NET** and **TypeScript/Node.js** 
 - ✅ .NET Framework 4.8
 - ⚠️ **Security Warning:** Uses deprecated Azure libraries with no ongoing security updates
 
-**⚠️ Not recommended for production use due to deprecated dependencies**
+**⚠️ Not recommended for production use due to security issues in deprecated dependencies**
+
+**⚠️ Successful implementation varies by scenario and is not guaranteed in all environments**
 
 **[📖 Full Documentation →](Src/dotnet/RelayTunnelUsingWCF/README.md)**
 
@@ -64,7 +73,7 @@ This repository contains implementations in **.NET** and **TypeScript/Node.js** 
 ### [RelayTunnelUsingHybridConnection (TypeScript)](Src/ts/RelayTunnelUsingHybridConnection/README.md) ⚠️ **Beta - DirectLine Issues**
 **Technology:** Azure Relay Hybrid Connections (TypeScript/Node.js)  
 **Version:** v0.9.0-beta.4  
-**Best For:** Node.js/TypeScript projects, cross-platform deployments (non-DirectLine scenarios)  
+**Best For:** Node.js/TypeScript projects, cross-platform deployments
 **Platform:** Windows (pre-built), Linux/macOS (build from source)
 
 **Protocol Support:**
@@ -98,7 +107,8 @@ Download the latest pre-built binaries from the **[Releases Page](../../releases
 
 ### Linux & macOS Users
 Please refer to the project-specific documentation for build instructions:
-- **[.NET Version Build Guide](Src/dotnet/RelayTunnelUsingHybridConnection/README.md#building-from-source)**
+- **[.NET 8 Build Guide](Src/dotnet/RelayTunnelUsingHybridConnection/README.md#building-from-source-linuxmacos)**
+- **[.NET Framework 4.8 Build Guide](Src/dotnet/RelayTunnelUsingWCF/README.md#building-from-source)**
 - **[TypeScript Version Build Guide](Src/ts/RelayTunnelUsingHybridConnection/README.md#building-from-source)**
 
 ## 🚀 Quick Start

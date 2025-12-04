@@ -72,12 +72,27 @@
             border: 1px solid #ececec;
             color: #303030;
         }
-        #files .directory:before {
-            content: "📁 ";
-        }
-        #files .file:before {
-            content: "📄 ";
-        }
+        /* Icons */
+        .icon-directory:before { content: "📁 "; }
+        .icon-file:before { content: "📄 "; }
+        
+        /* Code */
+        .icon-html:before { content: "🌐 "; }
+        .icon-css:before { content: "🎨 "; }
+        .icon-js:before { content: "📜 "; }
+        .icon-json:before { content: "⚙️ "; }
+        .icon-xml:before { content: "📃 "; }
+        .icon-csharp:before { content: "🔷 "; }
+        
+        /* Media */
+        .icon-image:before { content: "🖼️ "; }
+        .icon-audio:before { content: "🎵 "; }
+        .icon-video:before { content: "🎬 "; }
+        
+        /* Documents */
+        .icon-pdf:before { content: "📕 "; }
+        .icon-archive:before { content: "📦 "; }
+        .icon-text:before { content: "📝 "; }
         .clearfix:after {
             content: "";
             display: table;
@@ -178,7 +193,7 @@
                 if (this.currentPath) {
                     const parentPath = this.currentPath.split('/').slice(0, -1).join('/');
                     const li = document.createElement('li');
-                    li.innerHTML = `<a href="#" class="directory" onclick="browser.loadDirectory('${parentPath}')">.. (parent directory)</a>`;
+                    li.innerHTML = `<a href="#" class="directory icon-directory" onclick="browser.loadDirectory('${parentPath}')">.. (parent directory)</a>`;
                     filesList.appendChild(li);
                 }
 
@@ -188,8 +203,18 @@
 
                 [...directories, ...files].forEach(item => {
                     const li = document.createElement('li');
-                    const className = item.type === 'directory' ? 'directory' : 'file';
                     const newPath = this.currentPath ? `${this.currentPath}/${item.name}` : item.name;
+                    
+                    // Determine icon class
+                    let iconClass = 'icon-file';
+                    if (item.type === 'directory') {
+                        iconClass = 'icon-directory';
+                    } else {
+                        iconClass = this.getFileIconClass(item.name);
+                    }
+
+                    // Combine classes
+                    const className = `${item.type === 'directory' ? 'directory' : 'file'} ${iconClass}`;
                     
                     if (item.type === 'directory') {
                         li.innerHTML = `<a href="#" class="${className}" onclick="browser.loadDirectory('${newPath}')">${item.name}</a>`;
@@ -211,6 +236,30 @@
                     
                     filesList.appendChild(li);
                 });
+            }
+
+            getFileIconClass(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                // If no extension (or starts with dot), treat as generic file
+                if (ext === filename.toLowerCase() || filename.startsWith('.')) {
+                     if (filename.toLowerCase() === 'dockerfile') return 'icon-json';
+                     return 'icon-file';
+                }
+
+                switch (ext) {
+                    case 'html': case 'htm': return 'icon-html';
+                    case 'css': case 'scss': case 'less': return 'icon-css';
+                    case 'js': case 'ts': case 'jsx': case 'tsx': case 'mjs': return 'icon-js';
+                    case 'json': case 'config': case 'xml': case 'yaml': case 'yml': return 'icon-json';
+                    case 'cs': case 'csproj': case 'sln': return 'icon-csharp';
+                    case 'jpg': case 'jpeg': case 'png': case 'gif': case 'svg': case 'ico': case 'bmp': case 'webp': return 'icon-image';
+                    case 'mp3': case 'wav': case 'ogg': return 'icon-audio';
+                    case 'mp4': case 'webm': case 'mov': case 'avi': return 'icon-video';
+                    case 'zip': case 'rar': case '7z': case 'tar': case 'gz': return 'icon-archive';
+                    case 'pdf': return 'icon-pdf';
+                    case 'txt': case 'md': case 'log': return 'icon-text';
+                    default: return 'icon-file';
+                }
             }
 
             showLoading(show) {

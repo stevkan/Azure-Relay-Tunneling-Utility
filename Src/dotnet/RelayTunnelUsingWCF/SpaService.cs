@@ -136,29 +136,72 @@ namespace RelayTunnelUsingWCF
 
             try
             {
-                // Simple regex-based parsing of HTML directory listing
-                var linkPattern = @"<a\s+href=""([^""]+)""\s+class=""[^""]*icon[^""]*icon-([^""]*)""\s+title=""([^""]+)""[^>]*>.*?<span\s+class=""name"">([^<]+)</span>";
-                var matches = Regex.Matches(html, linkPattern, RegexOptions.IgnoreCase);
+                // 1. Try specific pattern (original)
+                var specificPattern = @"<a\s+href=""([^""]+)""\s+class=""[^""]*icon[^""]*icon-([^""]*)""\s+title=""([^""]+)""[^>]*>.*?<span\s+class=""name"">([^<]+)</span>";
+                var matches = Regex.Matches(html, specificPattern, RegexOptions.IgnoreCase);
 
-                foreach (Match match in matches)
+                if (matches.Count > 0)
                 {
-                    var href = match.Groups[1].Value;
-                    var iconClass = match.Groups[2].Value;
-                    var title = match.Groups[3].Value;
-                    var name = match.Groups[4].Value;
-
-                    // Skip parent directory entries and system files
-                    if (name == ".." || name.StartsWith(".")) continue;
-
-                    var type = iconClass.Contains("directory") ? "directory" : "file";
-
-                    items.Add(new
+                    foreach (Match match in matches)
                     {
-                        name = name,
-                        type = type,
-                        href = href,
-                        title = title
-                    });
+                        var href = match.Groups[1].Value;
+                        var iconClass = match.Groups[2].Value;
+                        var title = match.Groups[3].Value;
+                        var name = match.Groups[4].Value;
+
+                        if (name == ".." || name.StartsWith(".")) continue;
+
+                        var type = iconClass.Contains("directory") ? "directory" : "file";
+
+                        items.Add(new
+                        {
+                            name = name,
+                            type = type,
+                            href = href,
+                            title = title
+                        });
+                    }
+                }
+                else
+                {
+                    // 2. Fallback: Generic link parsing (npx serve, IIS, etc.)
+                    // Allow for attributes before href
+                    var genericPattern = @"<a\s+(?:[^>]*?\s+)?href=""([^""]+)""[^>]*>(.*?)</a>";
+                    matches = Regex.Matches(html, genericPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+                    foreach (Match match in matches)
+                    {
+                        var hrefRaw = match.Groups[1].Value;
+                        var nameRaw = match.Groups[2].Value;
+
+                        // Decode and unescape
+                        var href = Uri.UnescapeDataString(hrefRaw);
+                        var name = WebUtility.HtmlDecode(Regex.Replace(nameRaw, "<.*?>", "")).Trim();
+
+                        if (string.IsNullOrWhiteSpace(name)) continue;
+                        if (name == ".." || name == "." || name.StartsWith("Parent Directory")) continue;
+
+                        // Determine type
+                        var type = "file";
+                        
+                        // Check for trailing slash in href or name, or explicit class
+                        // Handle both forward and backward slashes
+                        if (href.EndsWith("/") || href.EndsWith("\\") || 
+                            name.EndsWith("/") || name.EndsWith("\\") || 
+                            match.Value.Contains("class=\"directory\"") || match.Value.Contains("class='directory'"))
+                        {
+                            type = "directory";
+                            name = name.TrimEnd('/', '\\');
+                        }
+
+                        items.Add(new
+                        {
+                            name = name,
+                            type = type,
+                            href = hrefRaw, // Keep original href
+                            title = name
+                        });
+                    }
                 }
             }
             catch (Exception ex)
