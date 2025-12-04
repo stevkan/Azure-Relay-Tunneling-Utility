@@ -188,14 +188,31 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Create tags for changelog compare links
-          git tag -a "hybrid-v${{ inputs.hybrid_version }}" -m "Hybrid Connection v${{ inputs.hybrid_version }}"
-          git tag -a "wcf-v${{ inputs.wcf_version }}" -m "WCF Relay v${{ inputs.wcf_version }}"
-          git tag -a "ts-v${{ inputs.ts_version }}" -m "TypeScript v${{ inputs.ts_version }}"
+          # Create tags for changelog compare links (skip if already exists)
+          HYBRID_TAG="hybrid-v${{ inputs.hybrid_version }}"
+          WCF_TAG="wcf-v${{ inputs.wcf_version }}"
+          TS_TAG="ts-v${{ inputs.ts_version }}"
           
-          git push origin "hybrid-v${{ inputs.hybrid_version }}"
-          git push origin "wcf-v${{ inputs.wcf_version }}"
-          git push origin "ts-v${{ inputs.ts_version }}"
+          if git rev-parse "$HYBRID_TAG" >/dev/null 2>&1; then
+            echo "Tag $HYBRID_TAG already exists, skipping"
+          else
+            git tag -a "$HYBRID_TAG" -m "Hybrid Connection v${{ inputs.hybrid_version }}"
+            git push origin "$HYBRID_TAG"
+          fi
+          
+          if git rev-parse "$WCF_TAG" >/dev/null 2>&1; then
+            echo "Tag $WCF_TAG already exists, skipping"
+          else
+            git tag -a "$WCF_TAG" -m "WCF Relay v${{ inputs.wcf_version }}"
+            git push origin "$WCF_TAG"
+          fi
+          
+          if git rev-parse "$TS_TAG" >/dev/null 2>&1; then
+            echo "Tag $TS_TAG already exists, skipping"
+          else
+            git tag -a "$TS_TAG" -m "TypeScript v${{ inputs.ts_version }}"
+            git push origin "$TS_TAG"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
