@@ -1,6 +1,6 @@
 # Azure Relay Tunnel (TypeScript/Node.js)
 
-**Version: 0.9.0-beta.4**
+**Version: 0.9.0-beta.5**
 
 > **🚨 BETA VERSION - KNOWN ISSUES**
 >
@@ -226,7 +226,7 @@ Azure Relay Hybrid Connection Utility (TypeScript/Node.js)
 Initializing Azure Resource Manager for dynamic resource management...
 ✓ Azure Resource Manager initialized
 Found 1 enabled relay configuration(s):
-  • my-relay → http://localhost:3978/ (Dynamic: true)
+  * my-relay → http://localhost:3978/ (Dynamic: true)
 
 Starting relay: my-relay
   Namespace: common-relay
