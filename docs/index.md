@@ -9,16 +9,16 @@ title: Downloads
 
 ## 🚀 Relay Tunnel Using Hybrid Connection (Recommended)
 
-**Latest Version: v1.6.2** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/hybrid-v1.6.2)
+**Latest Version: v1.6.3** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/hybrid-v1.6.3)
 
-**Technology:** Azure Relay Hybrid Connections (.NET 8)  
+**Technology:** Azure Relay Hybrid Connections (.NET 8)
 **Status:** ✅ Actively maintained, production-ready
 
 ### Downloads
 
 **Pre-built Binaries (Windows Only):**
-- **[Windows Exe (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/ts-v0.9.0-beta.4/RelayTunnel-HybridConnection-JS-Installer.exe)**
-- **[Windows (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/ts-v0.9.0-beta.4/RelayTunnel-HC-TS-v0.9.0-beta.4-Win-x64.zip)**
+- **[Windows Exe (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.3/RelayTunnel-HybridConnection-DotNet-Installer.exe)**
+- **[Windows (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/hybrid-v1.6.2/RelayTunnel-HC-NET-v1.6.3-Win-x64.zip)**
 
 ### Linux & macOS Users
 Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS users can build from source.
@@ -36,19 +36,17 @@ Official releases currently provide pre-built binaries for **Windows only**. Lin
 
 ## 🚀 Node.js / TypeScript Version (Beta)
 
-**Version: 0.9.0-beta.4** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/ts/RelayTunnelUsingHybridConnection) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/ts-v0.9.0-beta.4)
+**Version: 0.9.0-beta.5** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/ts/RelayTunnelUsingHybridConnection) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/ts-v0.9.0-beta.5)
 
 **Technology:** Node.js 20+ (Hybrid Connections)  
 **Status:** 🧪 **Beta** - Known issues with DirectLine/Web Chat.
 
 ### Downloads
 
-**Pre-built Binaries (Windows Only):**
-- **[Windows Exe (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/ts-v0.9.0-beta.4/RelayTunnel-HybridConnection-JS-Installer.exe)**
-- **[Windows (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/ts-v0.9.0-beta.4/RelayTunnel-HC-TS-v0.9.0-beta.4-Win-x64.zip)**
+- **[Windows (x64)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/ts-v0.9.0-beta.5/RelayTunnel-HC-TS-v0.9.0-beta.5-Win-x64.zip)**
 
-### Linux & macOS Users
-Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS users can build from source.
+### Windows, Linux & macOS Users
+Windows, Linux and macOS users must build from source.
 
 👉 **[View Build Instructions for Linux/macOS](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/blob/main/Src/ts/RelayTunnelUsingHybridConnection/README.md#-installation)**
 
@@ -63,7 +61,7 @@ Official releases currently provide pre-built binaries for **Windows only**. Lin
 
 ## 🚀 Relay Tunnel Using WCF (Legacy)
 
-**Latest Version: v1.5.6** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingWCF) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/wcf-v1.5.6)
+**Latest Version: v1.5.7** | [Documentation](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingWCF) | [Release Notes](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/tag/wcf-v1.5.7)
 
 **Technology:** WCF Relay (.NET Framework 4.8)  
 **Status:** ⚠️ **Legacy - uses deprecated Azure libraries**
@@ -72,11 +70,10 @@ Official releases currently provide pre-built binaries for **Windows only**. Lin
 
 ### Downloads
 
-- **[Windows Exe (x86)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/wcf-v1.5.6/RelayTunnel-WCF-DotNet-Installer.exe)**
-- **[Windows (x86)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/wcf-v1.5.6/RelayTunnel-WCF-NET-v1.5.6-Win-x86.zip)**
+- **[Windows (x86)](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/releases/download/wcf-v1.5.7/RelayTunnel-WCF-NET-v1.5.7-Win-x86.zip)**
 
-### Linux & macOS Users
-Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS options are not supported by WCF.
+### Windows, Linux & macOS Users
+Windows must build from source. Linux and macOS options are not supported by WCF.
 
 ### Quick Start
 1. Download the zip
@@ -92,7 +89,7 @@ Official releases currently provide pre-built binaries for **Windows only**. Lin
 | Feature | Hybrid Connection (.NET) | Hybrid Connection (TS) | WCF Relay |
 |---------|--------------------------|------------------------|-----------|
 | **Runtime** | .NET 8 | Node.js 20+ | .NET Framework 4.8 |
-| **Platforms** | Windows (Release), Linux/macOS (Source) | Windows (Release), Linux/macOS (Source) | Windows only |
+| **Platforms** | Windows (Release), Linux/macOS (Source) | Windows/Linux/macOS (Source) | Windows only |
 | **HTTP/REST Support** | ✅ Yes | ✅ Yes | ✅ Yes |
 | **WebSocket Support** | ✅ Yes | ✅ Yes | ❌ No |
 | **Production Ready** | ✅ Yes | 🧪 Beta | ⚠️ No - Security Risk |
