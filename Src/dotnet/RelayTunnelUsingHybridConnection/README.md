@@ -183,16 +183,6 @@ To build and run on Linux or macOS:
 dotnet publish -c Release -r win-x64 --self-contained
 ```
 
-**Using Visual Studio:**
-1. Right-click project → **Publish**
-2. Select **Folder** as target
-3. Click **Create Profile**
-4. Click **Configure** and set:
-   - Configuration: "Release | Any CPU"
-   - Deployment Mode: "Self-contained"
-   - Target Runtime: "win-x64", "linux-x64", or "osx-x64"
-5. Click **Save** → **Publish**
-
 Output location: `/bin/Release/net8.0/{runtime}` folder with all necessary files. The `appsettings.json` can be edited without recompiling.
 
 ## 📝 Example Output

@@ -1,6 +1,6 @@
 # RelayTunnelUsingWCF
 
-**Version: 1.5.5**
+**Version: 1.5.7**
 
 This .NET Framework 4.8 console application provides **WCF Relay functionality** where the relay endpoint appears in your Azure Relay namespace when running and disappears when stopped.
 
@@ -8,8 +8,7 @@ This .NET Framework 4.8 console application provides **WCF Relay functionality**
 
 An HTTP tunneling utility that forwards HTTP traffic from Azure to your local machine. This is useful for:
 - Exposing local web servers, APIs, or HTTP services through Azure endpoints
-- Debugging bots and agents locally while receiving real traffic from Azure-hosted channels
-- Testing with real ChannelData from channels like WebChat, Teams, Skype
+- Debugging locally while receiving real traffic
 - Development and testing without deploying to Azure
 
 ## ✨ Features
@@ -41,7 +40,7 @@ This implementation is suitable for:
 - .NET Framework 4.8 must be installed
 - Visual Studio (for building)
 - Azure Relay namespace with SAS policy credentials
-- Local bot/agent service to proxy requests to
+- Locally exposed port to proxy requests to
 
 ## ⚙️ Configuration
 
@@ -136,14 +135,44 @@ Before testing the relay, your Azure Bot's messaging endpoint must be updated:
 
 Press **Ctrl+C** or **Enter** to stop all services. The relay endpoints will automatically disappear from Azure Relay.
 
-## 📤 Building Executable
+## 📤 Publishing Executable
 
-Once testing is completed, you can compile the project into an executable:
+### Building from Source (Windows Only)
 
-1. Right click the project folder in Visual Studio and select **Build**
-2. The .exe will output to the **/bin/debug** folder, along with other necessary files, located in the project's directory folder
-3. All the files are necessary to run and should be included when moving the .exe to a new folder/location
-4. The **appsettings.json** is in the same folder and can be edited as credentials change without needing to recompile the project
+> ⚠️ **Note:** This project requires .NET Framework 4.8, which is **Windows-only**. It cannot be built or run on Linux or macOS.
+
+To build from source on Windows:
+
+1. **Install Prerequisites:**
+   - [Visual Studio 2019 or later](https://visualstudio.microsoft.com/) with .NET Framework 4.8 targeting pack
+   - Or [.NET Framework 4.8 Developer Pack](https://dotnet.microsoft.com/download/dotnet-framework/net48)
+
+2. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/stevkan/AzureRelayTunnelingUtility.git
+   cd AzureRelayTunnelingUtility
+   ```
+
+3. **Build and Publish:**
+   ```bash
+   # Using MSBuild (from Developer Command Prompt)
+   msbuild Src/dotnet/RelayTunnelUsingWCF/RelayTunnelUsingWCF.csproj /p:Configuration=Release
+
+   # Or using Visual Studio: Open the solution and build in Release mode
+   ```
+
+4. **Run the Utility:**
+   ```bash
+   .\Src\dotnet\RelayTunnelUsingWCF\bin\Release\RelayTunnelUsingWCF.exe
+   ```
+
+### Publishing Self-Contained Executable
+
+**Using Visual Studio:**
+1. Right-click the project folder in Visual Studio and select **Build** (Release configuration)
+2. The `.exe` will output to the `/bin/Release` folder, along with other necessary files
+
+Output location: `/bin/Release` folder with all necessary files. The `appsettings.json` can be edited without recompiling.
 
 ## 📝 Example Output
 
@@ -186,7 +215,7 @@ This WCF Relay Host is designed to work alongside your existing applications:
 
 1. **Start your local service** on the configured target address (e.g., `http://localhost:3978`)
 2. **Start this WCF Relay Host** to create the relay endpoint in Azure
-3. **Access via Azure**: Requests to `https://[your-relay-namespace].servicebus.windows.net/[your-relay-name]/api/messages` will be proxied to your local service
+3. **Access via Azure**: Requests to `https://[your-relay-namespace].servicebus.windows.net/[your-relay-name]` will be proxied to your local service
 
 **Note**: This project provides WCF Relay functionality, which is different from the Hybrid Connections approach used in the RelayTunnelUsingHybridConnection project. Both serve similar purposes but use different Azure Relay technologies.
 
@@ -202,7 +231,7 @@ This WCF Relay Host is designed to work alongside your existing applications:
 - ✅ Request-response messaging patterns
 
 **Not Supported:**
-- ❌ WebSocket connections (e.g., bot Direct Line WebSocket protocol, SignalR, real-time communication)
+- ❌ WebSocket connections (e.g., Direct Line WebSocket protocol, SignalR, real-time communication)
 - ❌ Persistent bidirectional connections
 - ❌ Streaming protocols requiring WebSocket
 
