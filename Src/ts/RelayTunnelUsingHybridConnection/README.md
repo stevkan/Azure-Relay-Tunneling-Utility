@@ -58,7 +58,7 @@ An HTTP/WebSocket tunneling utility that forwards traffic from Azure to your loc
 ### From Source
 
 ```bash
-cd Src/ts
+cd Src/ts/RelayTunnelUsingHybridConnection
 npm install
 npm run build
 ```
@@ -73,13 +73,14 @@ npm run dev
 
 ### Build Executable
 
-> **Note for Windows Users:** Pre-built binaries are available on the **[Releases Page](../../../releases)**.
-
 To build executables for your platform:
 
 ```bash
 # Build for all platforms
 npm run pkg:all
+
+# Build for Windows only
+npm run package:win
 
 # Build for Linux only
 npm run package:linux
@@ -88,9 +89,9 @@ npm run package:linux
 npm run package:macos
 
 # Executables will be in ./bin/
-# - relay-tunnel-win.exe (Windows)
-# - relay-tunnel-linux (Linux)
-# - relay-tunnel-macos (macOS)
+# - RelayTunnelUsingHybridConnection.exe (Windows)
+# - RelayTunnelUsingHybridConnection-linux (Linux)
+# - RelayTunnelUsingHybridConnection-macos (macOS)
 # - .env.template
 ```
 
@@ -175,7 +176,7 @@ RELAYS=namespace1|relay1|policy|key1|http://localhost:3978/|true|true|false||tru
 npm start
 
 # Specify custom env file
-npm start -- --env-file /path/to/.env.production
+npm start -- --env-file /path/to/.env
 
 # Enable verbose logging
 npm start -- --verbose
@@ -191,10 +192,10 @@ npm start -- --version
 
 ```bash
 # Windows
-relay-tunnel.exe --env-file .env --verbose
+RelayTunnelUsingHybridConnection.exe --env-file .env --verbose
 
 # Linux/macOS
-./relay-tunnel --env-file .env --verbose
+./RelayTunnelUsingHybridConnection-{{edition}} --env-file .env --verbose
 ```
 
 ### Configure Azure Bot Messaging Endpoint
@@ -216,6 +217,66 @@ relay-tunnel.exe --env-file .env --verbose
 ### Stop the Application
 
 Press **Ctrl+C** to gracefully stop all services. Dynamic Hybrid Connections will be automatically deleted.
+
+## 📤 Publishing Executable
+
+### Building from Source (Windows/Linux/macOS)
+
+To build and run on Windows, Linux, or macOS:
+
+1. **Install Node.js 20+:**
+   - [Download Node.js](https://nodejs.org/) for your OS, or use a version manager like `nvm`.
+
+2. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/stevkan/AzureRelayTunnelingUtility.git
+   cd AzureRelayTunnelingUtility/Src/ts/RelayTunnelUsingHybridConnection
+   ```
+
+3. **Install Dependencies and Build:**
+   ```bash
+   npm install
+   npm run build
+   ```
+
+4. **Build Platform Executable:**
+   ```bash
+   # Windows
+   npm run package:win
+
+   # Linux
+   npm run package:linux
+
+   # macOS
+   npm run package:macos
+   ```
+
+5. **Run the Utility:**
+   ```bash
+   # Windows
+   .\bin\relay-tunnel-win.exe --env-file .env
+
+   # Linux
+   ./bin/relay-tunnel-linux --env-file .env
+
+   # macOS
+   ./bin/relay-tunnel-macos --env-file .env
+   ```
+
+### Publishing Self-Contained Executable
+
+**Using npm scripts:**
+```bash
+# Build for all platforms
+npm run pkg:all
+
+# Build for specific platform
+npm run package:win      # Windows
+npm run package:linux    # Linux
+npm run package:macos    # macOS
+```
+
+Output location: `./bin/` folder with platform-specific executables. The `.env` file can be edited without rebuilding.
 
 ## 📝 Example Output
 
