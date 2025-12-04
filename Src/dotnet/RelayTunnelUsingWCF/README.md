@@ -60,7 +60,7 @@ Update the `appsettings.json` file with your Azure Relay settings. The applicati
       "RelayName": "your-relay-name", 
       "PolicyName": "RootManageSharedAccessKey",
       "PolicyKey": "your-root-shared-access-key",
-      "TargetServiceAddress": "http://localhost:3978/",
+      "TargetServiceAddress": "http://localhost:5000/",
       "ServiceDiscoveryMode": "Private",
       "EnableDetailedLogging": true,
       "IsEnabled": true
@@ -70,8 +70,8 @@ Update the `appsettings.json` file with your Azure Relay settings. The applicati
       "RelayName": "another-relay-name",
       "PolicyName": "RootManageSharedAccessKey",
       "PolicyKey": "your-root-shared-access-key", 
-      "TargetServiceAddress": "http://localhost:3979/",
-      "ServiceDiscoveryMode": "Public",
+      "TargetServiceAddress": "http://localhost:5001/",
+      "ServiceDiscoveryMode": "Private",
       "EnableDetailedLogging": false,
       "IsEnabled": false
     }
@@ -87,7 +87,7 @@ Update the `appsettings.json` file with your Azure Relay settings. The applicati
 | `RelayName` | string | Yes | Name of the WCF relay endpoint |
 | `PolicyName` | string | Yes | Name of the shared access policy (usually "RootManageSharedAccessKey") |
 | `PolicyKey` | string | Yes | Key for the shared access policy |
-| `TargetServiceAddress` | string | Yes | Local service URL to proxy requests to (e.g., "http://localhost:3978/") |
+| `TargetServiceAddress` | string | Yes | Local service URL to proxy requests to (e.g., "http://localhost:5000/") |
 | `ServiceDiscoveryMode` | string | No | Relay visibility: "Private" (default) or "Public" |
 | `EnableDetailedLogging` | boolean | No | Whether to enable detailed request/response logging. Default: `true` |
 | `IsEnabled` | boolean | Yes | Whether this relay configuration is active |
@@ -127,7 +127,7 @@ Before testing the relay, your Azure Bot's messaging endpoint must be updated:
 
 ### Test Your Bot
 
-1. Open and run your locally hosted bot/agent on the configured target address (e.g., `http://localhost:3978`)
+1. Open and run your locally hosted bot/agent on the configured target address (e.g., `http://localhost:5000`)
 2. Test your bot/agent on a channel (Test in Web Chat, Skype, Teams, etc.)
 3. User data is captured and logged as activity occurs
 
@@ -183,13 +183,13 @@ Found 2 enabled relay configuration(s):
 
 Starting relay: your-relay-name
   Namespace: your-relay-namespace
-  Target: http://localhost:3978/
+  Target: http://localhost:5000/
   Service Address: https://[your-relay-namespace].servicebus.windows.net/[your-relay-name]/
   √ Relay 'your-relay-name' started successfully
 
 Starting relay: another-relay-name
   Namespace: your-relay-namespace
-  Target: http://localhost:8500/
+  Target: http://localhost:5001/
   Service Address: https://[your-relay-namespace].servicebus.windows.net/[another-relay-name]/
   √ Relay 'another-relay-name' started successfully
 
@@ -213,7 +213,7 @@ Press Ctrl+C or Enter to stop all services...
 
 This WCF Relay Host is designed to work alongside your existing applications:
 
-1. **Start your local service** on the configured target address (e.g., `http://localhost:3978`)
+1. **Start your local service** on the configured target address (e.g., `http://localhost:5000`)
 2. **Start this WCF Relay Host** to create the relay endpoint in Azure
 3. **Access via Azure**: Requests to `https://[your-relay-namespace].servicebus.windows.net/[your-relay-name]` will be proxied to your local service
 

@@ -23,7 +23,7 @@ title: Downloads
 ### Linux & macOS Users
 Official releases currently provide pre-built binaries for **Windows only**. Linux and macOS users can build from source.
 
-👉 **[View Build Instructions for Linux/macOS](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/blob/main/Src/dotnet/RelayTunnelUsingHybridConnection/README.md#-publishing-executable)**
+👉 **[View Build Instructions for Linux/macOS](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingHybridConnection#-publishing-executable)**
 
 ### Quick Start
 1. Download the appropriate zip for your platform
@@ -48,7 +48,7 @@ Official releases currently provide pre-built binaries for **Windows only**. Lin
 ### Windows, Linux & macOS Users
 Windows, Linux and macOS users must build from source.
 
-👉 **[View Build Instructions for Linux/macOS](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/blob/main/Src/ts/RelayTunnelUsingHybridConnection/README.md#-installation)**
+👉 **[View Build Instructions](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/ts/RelayTunnelUsingHybridConnection#-publishing-executable)**
 
 ### Quick Start
 1. Download the appropriate zip for your platform
@@ -74,6 +74,8 @@ Windows, Linux and macOS users must build from source.
 
 ### Windows, Linux & macOS Users
 Windows must build from source. Linux and macOS options are not supported by WCF.
+
+👉 **[View Build Instructions for Windows](https://github.com/stevkan/Azure-Relay-Tunneling-Utility/tree/main/Src/dotnet/RelayTunnelUsingWCF#-publishing-executable)**
 
 ### Quick Start
 1. Download the zip
